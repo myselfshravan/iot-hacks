@@ -1,11 +1,11 @@
-# Handoff: current status (updated 2026-10-10)
+# Handoff: current status (updated 2026-10-11)
 
 Layout, commands and rules are in `CLAUDE.md`. History and the original brief are in `docs/journal.md`.
 
 ## Products
 | # | Device | Board | State |
 |---|---|---|---|
-| 1 | **IR hub** (`irhub.local`): **Kelvin** AC remote + projector page | ESP32 #1 | Working from the phone. The DHT22 reads live. With the 4× 220R LED, the AC obeys without aiming the LED at it. |
+| 1 | **IR hub** (`irhub.local`): **Kelvin** AC remote + projector page | ESP32 #1 | **Fully working:** phone page (one screen), Alexa "Room AC" (replies OK), timer (none / off in / on in, 1-8 h) and sleep, DHT22 live readings. With the 4× 220R LED, the AC obeys without aiming the LED at it. |
 | 2 | **Ambient lights** | ESP32 #2 | Plan only (`firmware/ambient-lights/README.md`). Waiting for the LED strip. |
 | 3 | **Lexi** (AI desk pet) | ESP32 #3 (not bought yet) | Plan only (`firmware/lexi/README.md`). TFT is on hand. |
 
@@ -30,15 +30,10 @@ Layout, commands and rules are in `CLAUDE.md`. History and the original brief ar
   - a `/health` endpoint.
 
 ## Next steps
-1. **Wire the DHT and flash v2:**
-   - DHT data goes to GPIO 25 (column j), VCC to GPIO 33 (driven HIGH), GND to GND (see `docs/wiring.md`).
-   - Sensor is a DHT22 (white); already set in `climate.h`.
-   - Then run `make flash`.
-2. **Test plan:**
-   - `irhub.local` → IR sent ✓.
-   - Cover the LED → IR not seen ✗ after 3 tries.
-   - Power off the router → the LED slow-blinks, then recovers on its own.
-   - Sensor at the vent, AC turned on → "AC reacted ✓" within about 2 minutes.
-3. **Alexa:** put the Echo on Sukhada_Home, say "discover devices", then "set Room AC to 24".
-4. **Range:** add a 2nd 220R in parallel with the LED resistor, for about 33 mA.
-5. **Capture the remaining buttons:** Timer, Sleep, T cool and T warm (`captures/wavess-protocol.md`).
+1. Put the board near the AC on a USB charger (battery would last only 2-3 days). Run the sensor lead into the outlet air so "AC reacted ✓" works.
+2. Optional: remote access over HTTPS via a Cloudflare Tunnel. This needs an always-on Pi or similar device in the same house.
+3. Then ambient lights (ESP32 #2, Bangalore) and Lexi (ESP32 #3). Add the Bangalore Wi-Fi to their `secrets.h`.
+
+Lessons:
+- Espalexa sends IR inside its callback and blocks Alexa's state poll, so queue the command and send it from loop().
+- Never rewrite the value Alexa just set, or Alexa says "device is malfunctioning".
