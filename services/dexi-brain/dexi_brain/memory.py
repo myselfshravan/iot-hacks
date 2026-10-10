@@ -13,7 +13,7 @@ MAX_NOTES, MAX_LINES, MAX_DAYS, MAX_LOG = 40, 30, 30, 300
 
 # Status snapshots that aren't worth remembering: clock times, counts of pets.
 STATUS = re.compile(
-    r"\b\d{1,2}:\d{2}\b|\b\d+\s*(pets?|pokes?|taps?|times)\b"
+    r"\b\d{1,2}:\d{2}|\b\d+\s*(pets?|pokes?|taps?|times)\b"
     r"|\b(pets?|pokes?|taps?)\s+total\b|\b(today|tonight|right now|just now)\b", re.I)
 
 
