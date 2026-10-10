@@ -86,3 +86,14 @@ Female-female jumpers straight from the TFT header to the ESP32's **left** heade
 | LED | BL, BLK | D4 (backlight, PWM dimmable) |
 
 The SD-card pins on the module (SD_CS, MISO, ...) stay unconnected.
+
+**Breadboard layout (2026-10-11):**
+- ESP32 #2's left pins are in column b and its right pins in column j, with 3V3 at row 1.
+- Jumpers go into column a: LED a5, SCK a9, SDA a15, A0 a6, RESET a7, CS a8, GND a2, VCC a1.
+- The screen's header order, top to bottom, is LED, SCK, SDA, A0, RESET, CS, GND, VCC.
+
+**Verified:**
+- Robocraze "1.8 inch TFT LCD Module" (ST7735R) using Adafruit_ST7735 with `INITR_BLACKTAB`, rotation 2, hardware SPI at 20 MHz.
+- A full frame takes 21 ms (about 47 fps).
+- 3V3 on VCC works.
+- LovyanGFX's ST7735/ST7735S panels garbled the colours on this module, so use the Adafruit driver.

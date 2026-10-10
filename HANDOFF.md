@@ -7,7 +7,7 @@ Layout, commands and rules are in `CLAUDE.md`. History and the original brief ar
 |---|---|---|---|
 | 1 | **IR hub** (`irhub.local`): **Kelvin** AC remote + projector page | ESP32 #1 | **Fully working:** phone page (one screen), Alexa "Room AC" (replies OK), timer (none / off in / on in, 1-8 h) and sleep, DHT22 live readings. With the 4× 220R LED, the AC obeys without aiming the LED at it. |
 | 2 | **Ambient lights** | ESP32 #2 | Plan only (`firmware/ambient-lights/README.md`). Waiting for the LED strip. |
-| 3 | **Dexi** (AI desk pet) | ESP32 #2 | Starting: TFT bring-up (`experiments/11_tft_bringup`). Plan in `firmware/dexi/README.md`. |
+| 3 | **Dexi** (AI desk pet) | ESP32 #2 | TFT works (`experiments/11_tft_bringup`: Adafruit_ST7735, BLACKTAB, 47 fps animated face). Plan in `firmware/dexi/README.md`. |
 
 ## Kelvin (AC remote) features
 - Alexa device renamed **"Room AC"**, because "AC" clashes with a Control4 scene.
