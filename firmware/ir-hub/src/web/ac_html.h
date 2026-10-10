@@ -1,13 +1,13 @@
-// GENERATED from index.html by tools/embed_web.py. Do not edit.
+// GENERATED from ac.html by tools/embed_web.py. Do not edit.
 #pragma once
 
 #include <pgmspace.h>
 
-const char kIndexHtml[] PROGMEM = R"WEB(<!doctype html>
+const char kAcHtml[] PROGMEM = R"WEB(<!doctype html>
 <!--
-  Kelvin phone UI, served at "/".
-  Edit this file, then `make build` regenerates index_html.h (tools/embed_web.py).
-  Talks to the JSON API in src/net/web_api.cpp.
+  Kelvin, the AC remote page, served at "/".
+  Edit this file, then `make build` regenerates ac_html.h (tools/embed_web.py).
+  Talks to the JSON API in src/net/web_api.cpp. The projector has its own page (projector.html).
 -->
 <html>
 
@@ -42,7 +42,6 @@ const char kIndexHtml[] PROGMEM = R"WEB(<!doctype html>
     }
 
     .card,
-    .tabs,
     #offline {
       width: 100%;
       max-width: 380px;
@@ -68,21 +67,6 @@ const char kIndexHtml[] PROGMEM = R"WEB(<!doctype html>
       border-radius: 12px;
       padding: 10px 14px;
       text-align: center;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 6px;
-    }
-
-    .tabs button {
-      flex: 1;
-      height: 40px;
-      border-radius: 12px;
-    }
-
-    .tabs button.sel {
-      background: var(--acc);
     }
 
     /* AC */
@@ -182,35 +166,6 @@ const char kIndexHtml[] PROGMEM = R"WEB(<!doctype html>
       text-align: center;
     }
 
-    /* Projector */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-    }
-
-    .grid button {
-      height: 56px;
-      border-radius: 14px;
-      font-size: 15px;
-    }
-
-    .grid button:active {
-      background: var(--acc);
-    }
-
-    .grid .gap {
-      visibility: hidden;
-    }
-
-    .grid .red {
-      background: var(--bad);
-    }
-
-    .grid .blue {
-      background: var(--acc);
-    }
-
     #status {
       color: var(--dim);
       font-size: 12px;
@@ -220,11 +175,6 @@ const char kIndexHtml[] PROGMEM = R"WEB(<!doctype html>
 
 <body>
   <div id="offline">Kelvin offline: not responding</div>
-
-  <div class="tabs">
-    <button id="tabAc" class="sel">AC</button>
-    <button id="tabProjector">Projector</button>
-  </div>
 
   <div id="ac" style="display: contents">
     <div class="card"><button id="power">Power</button></div>
@@ -246,16 +196,6 @@ const char kIndexHtml[] PROGMEM = R"WEB(<!doctype html>
     <div class="card air">
       <div><span id="airC">--</span><small>air °C</small></div>
       <div><span id="airRh">--</span><small>humidity %</small></div>
-    </div>
-  </div>
-
-  <div id="projector" class="card" style="display: none">
-    <div class="grid">
-      <button class="red" data-b="power">Power</button><button class="gap"></button><button data-b="settings">Settings</button>
-      <button class="gap"></button><button data-b="up">&#9650;</button><button class="gap"></button>
-      <button data-b="left">&#9664;</button><button class="blue" data-b="ok">OK</button><button data-b="right">&#9654;</button>
-      <button data-b="back">Back</button><button data-b="down">&#9660;</button><button data-b="home">Home</button>
-      <button data-b="voldown">Vol &minus;</button><button data-b="s">S</button><button data-b="volup">Vol +</button>
     </div>
   </div>
 
@@ -300,12 +240,6 @@ const char kIndexHtml[] PROGMEM = R"WEB(<!doctype html>
       const res = await get('/set?' + q); // waits for the IR echo, so allow 3 s
       if (res) render(await res.json());
       else $('status').textContent = 'failed';
-    }
-
-    async function pressProjector(button) {
-      const res = await get('/projector?b=' + button);
-      $('status').textContent = res ? 'projector: ' + button : 'failed';
-      if (navigator.vibrate) navigator.vibrate(15);
     }
 
     // ---- rendering ----
@@ -359,13 +293,6 @@ const char kIndexHtml[] PROGMEM = R"WEB(<!doctype html>
       $('status').textContent = 'last change: ' + s.source + ' · Wi-Fi ' + s.rssi + ' dBm';
     }
 
-    function showTab(ac) {
-      $('ac').style.display = ac ? 'contents' : 'none';
-      $('projector').style.display = ac ? 'none' : 'block';
-      $('tabAc').className = ac ? 'sel' : '';
-      $('tabProjector').className = ac ? '' : 'sel';
-    }
-
     // ---- wiring ----
 
     $('power').onclick = () => setAc({
@@ -376,11 +303,6 @@ const char kIndexHtml[] PROGMEM = R"WEB(<!doctype html>
         temp: Math.min(30, Math.max(16, state.temp + Number(b.dataset.dt)))
       });
     });
-    document.querySelectorAll('[data-b]').forEach((b) => {
-      b.onclick = () => pressProjector(b.dataset.b);
-    });
-    $('tabAc').onclick = () => showTab(true);
-    $('tabProjector').onclick = () => showTab(false);
 
     refresh();
     setInterval(refresh, 2000);

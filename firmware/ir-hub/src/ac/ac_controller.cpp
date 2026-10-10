@@ -46,8 +46,12 @@ void AcController::command(const wavess::State& next, const char* source) {
 void AcController::onIrFrame(const decode_results& frame) {
   uint64_t bits;
   wavess::State seen;
-  if (!wavess::fromRaw(frame, &bits) || !wavess::decode(bits, &seen)) return;
-  if (seen == state_) return;  // our own echo, or a repeat
+  if (!wavess::fromRaw(frame, &bits)) return;
+  // Log every WAVESS-shaped frame, so unknown buttons (timer, sleep...) can be
+  // captured and decoded from the serial log.
+  bool known = wavess::decode(bits, &seen);
+  Serial.printf("RX 0x%010llX%s\n", bits, known ? "" : " (unknown layout)");
+  if (!known || seen == state_) return;  // unknown, our own echo, or a repeat
   echo_ = -1;
   adopt(seen, "remote");
 }
@@ -68,7 +72,12 @@ bool AcController::waitForEcho(uint64_t bits) {
   uint32_t start = millis();
   while (millis() - start < config::kEchoWaitMs) {
     uint64_t got;
-    if (ir_.receive() && wavess::fromRaw(ir_.frame(), &got) && got == bits) return true;
+    if (ir_.receive()) {
+      const decode_results& f = ir_.frame();
+      if (wavess::fromRaw(f, &got) && got == bits) return true;
+      Serial.printf("  echo mismatch: rawlen=%u hdr=%u/%u us\n", f.rawlen,
+                    f.rawbuf[1] * kRawTick, f.rawbuf[2] * kRawTick);
+    }
     delay(5);
   }
   return false;

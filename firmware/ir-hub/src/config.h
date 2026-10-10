@@ -1,11 +1,11 @@
-// Pins and tunables for Kelvin (ESP32 #1). Wiring: docs/wiring.md.
+// Pins and tunables for the IR hub (ESP32 #1). Wiring: docs/wiring.md.
 #pragma once
 
 #include <Arduino.h>
 
 namespace config {
 
-constexpr char kHostname[] = "kelvin";      // http://kelvin.local
+constexpr char kHostname[] = "irhub";       // http://irhub.local
 constexpr char kAlexaName[] = "Room AC";    // "AC" is taken by a Control4 scene
 
 // Pins

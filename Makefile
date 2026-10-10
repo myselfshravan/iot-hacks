@@ -1,7 +1,7 @@
-# Build/flash any sketch: make flash APP=kelvin  (or APP=experiments/06_ir_tx)
+# Build/flash any sketch: make flash APP=ir-hub  (or APP=experiments/06_ir_tx)
 FQBN ?= esp32:esp32:esp32
 PORT ?= /dev/cu.usbserial-0001
-APP  ?= kelvin
+APP  ?= ir-hub
 DIR  := $(if $(wildcard firmware/$(APP)),firmware/$(APP),$(APP))
 
 .PHONY: build flash monitor log check intellisense

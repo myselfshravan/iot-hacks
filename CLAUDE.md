@@ -8,7 +8,7 @@ for the current status.
 | Path | What |
 |---|---|
 | `firmware/<product>/` | Production sketches, one folder per device. Each is self-contained. |
-| `firmware/kelvin/` | ESP32 #1: **Kelvin**, the Wi-Fi AC remote (main project). Code map at the top of `kelvin.ino`; UI in `src/web/index.html` |
+| `firmware/ir-hub/` | ESP32 #1: **IR hub**, which replicates IR remotes. Main app: **Kelvin**, the AC remote (`src/ac/`, `src/web/ac.html`). Side app: projector (`src/projector/`, `src/web/projector.html`). Code map at the top of `ir-hub.ino` |
 | `firmware/ambient-lights/` | ESP32 #2: WS2812B monitor sync (WLED + HyperHDR); plan only |
 | `firmware/lexi/` | ESP32 #3: Lexi, the AI desk pet on a 1.8" TFT; plan only |
 | `experiments/` | Lab notebook: numbered one-off sketches. Don't edit; copy ideas into `firmware/`. |
@@ -17,7 +17,7 @@ for the current status.
 | `tools/` | `serial_log.py` (log/send over serial), `embed_web.py` (HTML → header), `vscode_intellisense.py` |
 
 ## Commands
-- `make flash APP=kelvin` builds and flashes (`APP=experiments/06_ir_tx` also works).
+- `make flash APP=ir-hub` builds and flashes (`APP=experiments/06_ir_tx` also works).
 - `make monitor` and `make log NAME=x SECONDS=60` (log saved to `captures/raw/x.log`).
 - `make check` compiles every sketch. Run it before committing.
 - `make intellisense` after adding a sketch or library.

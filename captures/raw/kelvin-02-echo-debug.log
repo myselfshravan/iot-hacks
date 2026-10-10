@@ -1,0 +1,40 @@
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4876
+ho 0 tail 12 room 4
+load:0x40078000,len:16532
+load:0x40080400,len:3500
+entry 0x400805b4
+
+Kelvin boot (reset reason 1)
+Serial: set mode=cool temp=24 fan=low swing=1 power=1 | state | health
+Wi-Fi trying Sukhada_Home
+  echo mismatch: rawlen=8 hdr=286/2318 us
+TX #1 0x0C10081900 echo=no
+  echo mismatch: rawlen=6 hdr=1006/1948 us
+TX #2 0x0C10081900 echo=no
+  echo mismatch: rawlen=8 hdr=288/2422 us
+TX #3 0x0C10081900 echo=no
+{"power":false,"mode":"cool","temp":24,"fan":"auto","swing":true,"source":"serial","seq":1,"echo_ok":false,"confirm":"none","air_c":0.0,"air_rh":0.0,"rssi":-50}
+Wi-Fi OK  IP=192.168.31.162  RSSI=-50 dBm
+READY  http://kelvin.local  or  http://192.168.31.162
+TX #1 0x0C10081300 echo=no
+TX #2 0x0C10081300 echo=no
+TX #3 0x0C10081300 echo=no
+{"power":false,"mode":"cool","temp":18,"fan":"auto","swing":true,"source":"app","seq":2,"echo_ok":false,"confirm":"none","air_c":0.0,"air_rh":0.0,"rssi":-52}
+  echo mismatch: rawlen=8 hdr=510/12882 us
+TX #1 0x0C10081400 echo=no
+  echo mismatch: rawlen=6 hdr=310/4156 us
+TX #2 0x0C10081400 echo=no
+TX #3 0x0C10081400 echo=no
+{"power":false,"mode":"cool","temp":19,"fan":"auto","swing":true,"source":"app","seq":3,"echo_ok":false,"confirm":"none","air_c":28.6,"air_rh":38.9,"rssi":-51}
+TX #1 0x0C10081300 echo=no
+  echo mismatch: rawlen=10 hdr=600/3730 us
+TX #2 0x0C10081300 echo=no
+  echo mismatch: rawlen=14 hdr=898/2516 us
+TX #3 0x0C10081300 echo=no
+{"power":false,"mode":"cool","temp":18,"fan":"auto","swing":true,"source":"app","seq":4,"echo_ok":false,"confirm":"none","air_c":28.6,"air_rh":38.9,"rssi":-52}

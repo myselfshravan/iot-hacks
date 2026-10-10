@@ -2,8 +2,9 @@
 
 #include <WiFi.h>
 
-#include "../remotes/projector.h"
-#include "../web/index_html.h"
+#include "../projector/projector.h"
+#include "../web/ac_html.h"
+#include "../web/projector_html.h"
 #include "alexa_bridge.h"
 
 namespace web_api {
@@ -54,12 +55,14 @@ String healthJson(const Deps& d) {
 void registerRoutes(WebServer& server, const Deps& d) {
   srv = &server;
   deps = new Deps(d);
-  server.on("/", HTTP_GET, [] { srv->send_P(200, "text/html", kIndexHtml); });
+  server.on("/", HTTP_GET, [] { srv->send_P(200, "text/html", kAcHtml); });
   server.on("/state", HTTP_GET, [] { srv->send(200, "application/json", deps->ac.json()); });
   server.on("/health", HTTP_GET,
             [] { srv->send(200, "application/json", healthJson(*deps)); });
   server.on("/set", HTTP_GET, handleSet);
-  server.on("/projector", HTTP_GET, handleProjector);
+  server.on("/projector", HTTP_GET,
+            [] { srv->send_P(200, "text/html", kProjectorHtml); });
+  server.on("/api/projector", HTTP_GET, handleProjector);
   server.onNotFound([] {
     if (!alexa::handle(srv->uri(), srv->arg(0))) srv->send(404, "text/plain", "Not found");
   });

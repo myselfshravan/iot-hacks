@@ -7,6 +7,7 @@ void Climate::begin() {
   pinMode(powerPin_, OUTPUT);
   digitalWrite(powerPin_, HIGH);
   dht_.begin();
+  lastReadMs_ = millis();  // DHT22 needs ~2 s after power-up; first read at +5 s
 }
 
 const char* Climate::name(Confirm c) {

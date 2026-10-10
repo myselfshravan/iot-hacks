@@ -3,14 +3,14 @@
 ## Boards
 | Board | Role | Notes |
 |---|---|---|
-| ESP32 #1 (NodeMCU 30-pin, CP2102) | Kelvin | Too wide for the breadboard: only column j is reachable (`wiring.md`) |
+| ESP32 #1 (NodeMCU 30-pin, CP2102) | IR hub (Kelvin AC remote + projector) | Too wide for the breadboard: only column j is reachable (`wiring.md`) |
 | ESP32 #2 | Ambient lights | |
 | ESP32 #3 | Desk pet | Still to buy |
 | Arduino Uno R3 | Bench only | No Wi-Fi. Use it for quick 5 V sensor or logic tests, not for products |
 
 One ESP32 can drive every IR device in a room. The same LED sends NEC to the projector and WAVESS to the AC. Several LEDs wired in parallel can cover different directions.
 
-## ESP32 #1 pin map (Kelvin)
+## ESP32 #1 pin map (IR hub)
 | GPIO | Use |
 |---|---|
 | 2 | Onboard blue LED, used as the status light |
@@ -23,7 +23,8 @@ One ESP32 can drive every IR device in a room. The same LED sends NEC to the pro
 | Free (column j) | 13, 32; 12 must be LOW at boot; 34, 35, 36, 39 are input-only |
 
 ## Names
-- **Kelvin**: the Wi-Fi AC remote (ESP32 #1). Hostname `kelvin.local`, Alexa name "Room AC".
+- **IR hub**: ESP32 #1, the generic IR remote replicator (`irhub.local`).
+- **Kelvin**: the AC remote app on the IR hub (page `/`, Alexa "Room AC"). The projector page is `/projector`.
 - **Lexi**: the AI desk pet (ESP32 #3). Alternative name Dexy.
 - Ambient lights (ESP32 #2): no name yet.
 

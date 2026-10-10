@@ -1,23 +1,23 @@
-// Kelvin: Wi-Fi remote for the WAVESS-controlled AC (ESP32 #1).
+// IR hub (ESP32 #1): replicates IR remotes over Wi-Fi.
+//   Kelvin    the WAVESS AC remote (main job): http://irhub.local, Alexa "Room AC"
+//   Projector side extra on the same IR LED:   http://irhub.local/projector
 //
-// Phone UI at http://kelvin.local, Alexa device "Room AC", serial console.
-// Kelvin builds WAVESS frames from a state model, checks that its own receiver
-// heard each one (resending if not), follows the physical remote, and uses a
-// DHT in the outlet air to confirm the AC really reacted. The projector remote
-// rides along on the same IR LED as a side extra.
+// Kelvin builds WAVESS frames from a state model, checks that the hub's own
+// receiver heard each one (resending if not), follows the physical remote, and
+// uses a DHT in the outlet air to confirm the AC really reacted.
 //
 // Code map (src/):
 //   config.h               pins and tunables
 //   ac/wavess.*            WAVESS protocol (captures/wavess-protocol.md)
 //   ac/ac_controller.*     AC state, send + echo/retry, remote tracking, persistence
 //   ir/ir_port.*           IR LED + receiver hardware
-//   remotes/projector.*    projector NEC codes
+//   projector/projector.*  projector NEC codes
 //   sensors/climate.*      DHT readings + reaction confirmation
 //   ui/status_led.h        blue LED: solid online, slow blink offline, flicker sending
 //   net/wifi_link.*        non-blocking Wi-Fi with backoff
 //   net/web_api.*          HTTP routes
 //   net/alexa_bridge.*     Alexa (Hue emulation)
-//   web/index.html         phone UI (embedded as index_html.h by tools/embed_web.py)
+//   web/*.html             phone UI + projector page (embedded as *_html.h by tools/embed_web.py)
 //   serial_console.*       USB serial commands
 //
 // Wi-Fi credentials: secrets.h (copy secrets.example.h). Wiring: docs/wiring.md.
@@ -71,7 +71,7 @@ void startWatchdog() {
 
 void setup() {
   Serial.begin(115200);
-  Serial.printf("\nKelvin boot (reset reason %d)\n", (int)esp_reset_reason());
+  Serial.printf("\nIR hub boot (reset reason %d)\n", (int)esp_reset_reason());
   led.begin();
   ir.begin();
   climate.begin();

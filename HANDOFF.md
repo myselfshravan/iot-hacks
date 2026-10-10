@@ -5,11 +5,11 @@ Layout, commands and rules are in `CLAUDE.md`. History and the original brief ar
 ## Products
 | # | Device | Board | State |
 |---|---|---|---|
-| 1 | **Kelvin** (Wi-Fi AC remote): AC + projector | ESP32 #1 | AC control proven from the phone (v1 = `experiments/10_ac_controller`). v2 is in `firmware/kelvin` and builds, but isn't flashed or tested yet. |
+| 1 | **IR hub** (`irhub.local`): **Kelvin** AC remote + projector page | ESP32 #1 | Working from the phone. The DHT22 reads live. With the 4× 220R LED, the AC obeys without aiming the LED at it. |
 | 2 | **Ambient lights** | ESP32 #2 | Plan only (`firmware/ambient-lights/README.md`). Waiting for the LED strip. |
 | 3 | **Lexi** (AI desk pet) | ESP32 #3 (not bought yet) | Plan only (`firmware/lexi/README.md`). TFT is on hand. |
 
-## Kelvin v2: what's new and untested
+## Kelvin (AC remote) features
 - Alexa device renamed **"Room AC"**, because "AC" clashes with a Control4 scene.
 - **Delivery feedback:**
   - `echo_ok`: the hub's own receiver heard the frame it sent. If not, it resends, up to 3 attempts.
@@ -35,7 +35,7 @@ Layout, commands and rules are in `CLAUDE.md`. History and the original brief ar
    - Sensor is a DHT22 (white); already set in `climate.h`.
    - Then run `make flash`.
 2. **Test plan:**
-   - `kelvin.local` → IR sent ✓.
+   - `irhub.local` → IR sent ✓.
    - Cover the LED → IR not seen ✗ after 3 tries.
    - Power off the router → the LED slow-blinks, then recovers on its own.
    - Sensor at the vent, AC turned on → "AC reacted ✓" within about 2 minutes.

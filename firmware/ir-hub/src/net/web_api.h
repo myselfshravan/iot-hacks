@@ -1,8 +1,9 @@
 // HTTP API + phone UI.
-//   GET /                -> phone UI (src/web/index.html)
+//   GET /                -> Kelvin, the AC remote page (src/web/ac.html)
 //   GET /state           -> AC state + delivery feedback (JSON)
 //   GET /set?power=1&mode=cool&temp=24&fan=auto&swing=1   (any subset)
-//   GET /projector?b=ok  -> one projector button
+//   GET /projector       -> projector remote page (src/web/projector.html)
+//   GET /api/projector?b=ok -> one projector button
 //   GET /health          -> uptime, Wi-Fi, heap, sensor (JSON)
 #pragma once
 
