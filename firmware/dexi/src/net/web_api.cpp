@@ -33,9 +33,16 @@ String stateJson() {
   j += "\"mood\":\"" + String(mood::name(deps->pet.mood())) + "\"";
   j += ",\"base\":\"" + String(mood::name(deps->pet.baseMood())) + "\"";
   j += ",\"say\":\"" + jsonEscape(deps->pet.saying()) + "\"";
-  j += ",\"taps\":" + String(deps->touch.taps());
-  j += ",\"double_taps\":" + String(deps->touch.doubleTaps());
-  j += ",\"long_presses\":" + String(deps->touch.longPresses());
+  const Gesture& g = deps->touch.last();
+  j += ",\"gesture\":{\"id\":" + String(g.id) + ",\"presses\":" + String(g.presses) +
+       ",\"total_ms\":" + String(g.totalMs) + ",\"press_ms\":[";
+  for (int i = 0; i < min<int>(g.presses, Gesture::kMaxPresses); i++)
+    j += (i ? "," : "") + String(g.pressMs[i]);
+  j += "],\"gap_ms\":[";
+  for (int i = 1; i < min<int>(g.presses, Gesture::kMaxPresses); i++)
+    j += (i > 1 ? "," : "") + String(g.gapMs[i]);
+  j += "]}";
+  j += ",\"touching\":" + String(deps->touch.held() ? "true" : "false");
   j += ",\"uptime_s\":" + String(millis() / 1000);
   j += ",\"rssi\":" + String(WiFi.RSSI());
   j += ",\"free_heap\":" + String(ESP.getFreeHeap());

@@ -1,7 +1,7 @@
 #include "touch.h"
 
-Touch::Touch(uint8_t signalPin, uint8_t powerPin, uint8_t groundPin, uint32_t longPressMs)
-    : signal_(signalPin), power_(powerPin), ground_(groundPin), longPressMs_(longPressMs) {}
+Touch::Touch(uint8_t signalPin, uint8_t powerPin, uint8_t groundPin)
+    : signal_(signalPin), power_(powerPin), ground_(groundPin) {}
 
 void Touch::begin() {
   pinMode(power_, OUTPUT);
@@ -11,32 +11,30 @@ void Touch::begin() {
   pinMode(signal_, INPUT_PULLDOWN);  // reads LOW if the pad isn't connected
 }
 
-Touch::Event Touch::update(uint32_t now) {
+bool Touch::update(uint32_t now) {
   bool pressed = digitalRead(signal_);
   if (pressed && !down_) {
     down_ = true;
-    longFired_ = false;
     downSince_ = now;
-  } else if (pressed && !longFired_ && now - downSince_ >= longPressMs_) {
-    longFired_ = true;
-    tapPending_ = false;
-    longPresses_++;
-    return Event::kLongPress;
+    if (current_.presses == 0) gestureStart_ = now;
   } else if (!pressed && down_) {
     down_ = false;
-    if (longFired_ || now - downSince_ < 30) return Event::kNone;  // long press or glitch
-    if (tapPending_ && now - lastRelease_ <= kDoubleTapMs) {
-      tapPending_ = false;
-      doubleTaps_++;
-      return Event::kDoubleTap;
+    uint32_t dur = now - downSince_;
+    if (dur < kDebounceMs) return false;
+    uint8_t i = current_.presses;
+    if (i < Gesture::kMaxPresses) {
+      current_.pressMs[i] = min<uint32_t>(dur, 65535);
+      current_.gapMs[i] = i ? min<uint32_t>(downSince_ - lastRelease_, 65535) : 0;
     }
-    tapPending_ = true;
+    current_.presses++;
     lastRelease_ = now;
   }
-  if (tapPending_ && !down_ && now - lastRelease_ > kDoubleTapMs) {
-    tapPending_ = false;
-    taps_++;
-    return Event::kTap;
+  if (!down_ && current_.presses && now - lastRelease_ > kGestureGapMs) {
+    current_.totalMs = lastRelease_ - gestureStart_;
+    current_.id = last_.id + 1;
+    last_ = current_;
+    current_ = Gesture();
+    return true;
   }
-  return Event::kNone;
+  return false;
 }

@@ -5,7 +5,7 @@ APP  ?= ir-hub
 LIBS := --libraries libraries
 DIR  := $(if $(wildcard firmware/$(APP)),firmware/$(APP),$(APP))
 
-.PHONY: build flash monitor log check intellisense
+.PHONY: build flash ota monitor log check intellisense
 
 build:
 	python3 tools/embed_web.py
@@ -13,6 +13,12 @@ build:
 
 flash: build
 	arduino-cli upload -b $(FQBN) -p $(PORT) $(DIR)
+
+# Flash over Wi-Fi (sketch must include ArduinoOTA): make ota APP=dexi [HOST=dexi.local]
+ESPOTA := $(lastword $(wildcard $(HOME)/Library/Arduino15/packages/esp32/hardware/esp32/*/tools/espota.py))
+ota: build
+	python3 $(ESPOTA) -i $$(python3 -c "import socket;print(socket.gethostbyname('$(or $(HOST),$(APP).local)'))") \
+	  -f $$(ls -t $(HOME)/Library/Caches/arduino/sketches/*/$(notdir $(DIR)).ino.bin | head -1)
 
 monitor:
 	arduino-cli monitor -p $(PORT) -c baudrate=115200

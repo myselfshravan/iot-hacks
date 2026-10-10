@@ -21,7 +21,6 @@ constexpr uint32_t kTftSpiHz = 20000000;
 constexpr uint8_t kTouchPin = 19;       // TTP223 I/O (HIGH while touched)
 constexpr uint8_t kTouchPowerPin = 21;  // TTP223 VCC (driven HIGH)
 constexpr uint8_t kTouchGroundPin = 22; // TTP223 GND (driven LOW)
-constexpr uint32_t kLongPressMs = 1200;
 
 constexpr uint32_t kFrameMs = 33;       // ~30 fps
 constexpr uint32_t kWatchdogMs = 30000;

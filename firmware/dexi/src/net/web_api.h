@@ -1,6 +1,6 @@
 // HTTP API for phone + the laptop brain.
 //   GET  /                       control page (src/web/control.html)
-//   GET  /state                  {"mood","base","say","taps","double_taps","long_presses",...}
+//   GET  /state                  {"mood","base","say","gesture":{id,presses,press_ms,gap_ms,total_ms},...}
 //   GET  /mood?m=happy[&secs=5]  secs=0/absent: becomes the base mood
 //   GET  /say?text=hi[&secs=8]
 //   GET  /look?x=-1..1&y=-1..1[&secs=3]
