@@ -1,124 +1,100 @@
-// 1.8" ST7735 TFT (128x160, SPI) bring-up for Dexi.
-// Shows colour bars + corner markers (to check colour order and pixel
-// offsets), then a blinking face drawn into an off-screen sprite (to check
-// that animation is smooth and flicker-free).
+// 1.8" ST7735R TFT (128x160, SPI) bring-up for Dexi, using Adafruit_ST7735.
+// (LovyanGFX's ST7735/ST7735S init garbled colours on this module; Adafruit's
+// INITR_BLACKTAB works, found with 12_tft_variants.)
+//
+// Shows a test pattern, then a blinking face drawn into an off-screen canvas
+// and pushed whole, so it doesn't flicker.
 //
 // Wiring (TFT -> ESP32), all on the ESP32's left header (docs/wiring.md, Dexi):
-//   VCC -> 3V3    GND -> GND    SCK/SCL -> D18    SDA/MOSI -> D23
-//   CS -> D5      A0/DC -> D16  RESET/RST -> D17  LED/BL -> D4
+//   VCC -> 3V3    GND -> GND    SCK -> D18    SDA -> D23
+//   CS -> D5      A0 -> D16     RESET -> D17  LED -> D4
 //
-// Serial: "offset <x> <y>", "bgr 0|1", "invert 0|1" to tune the panel live
-// (variants of these modules differ); then hard-code the values.
+// Serial tuning: "rot <0-3>", "mhz <n>", "tab <1-6>" (variant order of 12_tft_variants).
 
-#include <Arduino.h>
-#include <LovyanGFX.hpp>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7735.h>
+#include <SPI.h>
 
-constexpr int kSck = 18, kMosi = 23, kCs = 5, kDc = 16, kRst = 17, kBacklight = 4;
+constexpr int kCs = 5, kDc = 16, kRst = 17, kBacklight = 4;
 
-class Tft : public lgfx::LGFX_Device {
- public:
-  lgfx::Panel_ST7735S panel;
-  lgfx::Bus_SPI bus;
-  lgfx::Light_PWM light;
+Adafruit_ST7735 tft(&SPI, kCs, kDc, kRst);  // hardware SPI: SCK 18, MOSI 23
+GFXcanvas16 frame(128, 160);
 
-  Tft() {
-    auto b = bus.config();
-    b.spi_host = VSPI_HOST;
-    b.spi_mode = 0;
-    b.freq_write = 27000000;
-    b.pin_sclk = kSck;
-    b.pin_mosi = kMosi;
-    b.pin_miso = -1;
-    b.pin_dc = kDc;
-    bus.config(b);
-    panel.setBus(&bus);
-
-    auto p = panel.config();
-    p.pin_cs = kCs;
-    p.pin_rst = kRst;
-    p.panel_width = 128;
-    p.panel_height = 160;
-    p.memory_width = 132;
-    p.memory_height = 162;
-    p.offset_x = 2;
-    p.offset_y = 1;
-    p.rgb_order = false;
-    p.invert = false;
-    panel.config(p);
-
-    auto l = light.config();
-    l.pin_bl = kBacklight;
-    l.pwm_channel = 7;
-    light.config(l);
-    panel.setLight(&light);
-    setPanel(&panel);
-  }
-};
-
-Tft tft;
-LGFX_Sprite frame(&tft);
+const uint8_t kTabs[] = {INITR_BLACKTAB, INITR_GREENTAB, INITR_REDTAB,
+                         INITR_18GREENTAB, INITR_18REDTAB, INITR_18BLACKTAB};
+uint8_t tab = INITR_BLACKTAB;
+uint8_t rotation = 2;  // header at the top as the user holds it
+uint32_t spiHz = 20000000;
 
 void testPattern() {
-  const uint16_t bars[] = {TFT_RED, TFT_GREEN, TFT_BLUE, TFT_WHITE, TFT_BLACK};
+  const uint16_t bars[] = {ST77XX_RED, ST77XX_GREEN, ST77XX_BLUE, ST77XX_WHITE, ST77XX_BLACK};
   int w = tft.width() / 5;
   for (int i = 0; i < 5; i++) tft.fillRect(i * w, 0, w, tft.height(), bars[i]);
-  // 1-px white frame: every edge must be visible, none doubled or cut.
-  tft.drawRect(0, 0, tft.width(), tft.height(), TFT_WHITE);
-  tft.setTextColor(TFT_YELLOW, TFT_BLACK);
+  tft.drawRect(0, 0, tft.width(), tft.height(), ST77XX_WHITE);
+  tft.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
   tft.setCursor(4, tft.height() - 12);
-  tft.print("R G B W K");
+  tft.printf("R G B W K  %luMHz", spiHz / 1000000);
+}
+
+void begin() {
+  tft.initR(tab);
+  tft.setSPISpeed(spiHz);
+  tft.setRotation(rotation);
+  testPattern();
 }
 
 void drawFace(float t) {
-  frame.fillScreen(TFT_BLACK);
+  frame.fillScreen(ST77XX_BLACK);
   int cx = frame.width() / 2, cy = frame.height() / 2 - 6;
-  int bob = (int)(3 * sinf(t * 2.0f));
+  int bob = (int)roundf(3 * sinf(t * 2.0f));
   bool blink = fmodf(t, 3.5f) < 0.15f;
   for (int side : {-1, 1}) {
     int ex = cx + side * 26, ey = cy + bob;
-    if (blink) frame.fillRoundRect(ex - 14, ey - 2, 28, 5, 2, TFT_CYAN);
-    else frame.fillRoundRect(ex - 12, ey - 18, 24, 36, 10, TFT_CYAN);
+    if (blink) frame.fillRoundRect(ex - 14, ey - 2, 28, 5, 2, ST77XX_CYAN);
+    else frame.fillRoundRect(ex - 12, ey - 18, 24, 36, 10, ST77XX_CYAN);
   }
-  frame.fillArc(cx, cy + 30 + bob, 12, 9, 20, 160, TFT_PINK);
-  frame.setTextColor(TFT_DARKGREY);
-  frame.drawCenterString("Dexi", cx, frame.height() - 14);
-  frame.pushSprite(0, 0);
+  // Smile: a thick lower half-circle.
+  for (int r = 10; r <= 13; r++)
+    for (int a = 20; a <= 160; a += 4) {
+      float rad = a * PI / 180;
+      frame.drawPixel(cx + r * cosf(rad), cy + 30 + bob + r * sinf(rad), ST77XX_MAGENTA);
+    }
+  frame.setTextColor(0x7BEF);
+  frame.setCursor(cx - 12, frame.height() - 14);
+  frame.print("Dexi");
+  tft.drawRGBBitmap(0, 0, frame.getBuffer(), frame.width(), frame.height());
 }
 
 void handleSerial() {
   if (!Serial.available()) return;
   String cmd = Serial.readStringUntil(' ');
-  cmd.trim();
-  auto cfg = tft.panel.config();
-  if (cmd == "offset") {
-    cfg.offset_x = Serial.parseInt();
-    cfg.offset_y = Serial.parseInt();
-  } else if (cmd == "bgr") {
-    cfg.rgb_order = Serial.parseInt();
-  } else if (cmd == "invert") {
-    cfg.invert = Serial.parseInt();
-  }
+  int v = Serial.parseInt();
   Serial.readStringUntil('\n');
-  tft.panel.config(cfg);
-  tft.init();
-  testPattern();
-  Serial.printf("offset=%d,%d bgr=%d invert=%d\n", cfg.offset_x, cfg.offset_y,
-                cfg.rgb_order, cfg.invert);
-  delay(4000);
+  cmd.trim();
+  if (cmd == "rot") rotation = v & 3;
+  else if (cmd == "mhz") spiHz = v * 1000000UL;
+  else if (cmd == "tab" && v >= 1 && v <= 6) tab = kTabs[v - 1];
+  begin();
+  Serial.printf("rot=%d mhz=%lu\n", rotation, spiHz / 1000000);
+  delay(5000);
 }
 
 void setup() {
   Serial.begin(115200);
-  tft.init();
-  tft.setBrightness(200);
-  tft.setRotation(0);
-  testPattern();
-  Serial.println("TFT up: check bars are Red Green Blue White Black and the white frame");
-  delay(4000);
-  frame.createSprite(tft.width(), tft.height());
+  pinMode(kBacklight, OUTPUT);
+  digitalWrite(kBacklight, HIGH);
+  begin();
+  Serial.println("TFT up: bars should read R G B W K left to right");
+  delay(8000);
 }
 
 void loop() {
   handleSerial();
-  drawFace(millis() / 1000.0f);
+  uint32_t start = millis();
+  drawFace(start / 1000.0f);
+  static uint32_t lastLog = 0;
+  if (start - lastLog > 5000) {
+    lastLog = start;
+    Serial.printf("frame %lu ms\n", millis() - start);
+  }
 }

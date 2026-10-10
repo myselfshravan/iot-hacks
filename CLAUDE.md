@@ -21,7 +21,7 @@ for the current status.
 - `make monitor` and `make log NAME=x SECONDS=60` (log saved to `captures/raw/x.log`).
 - `make check` compiles every sketch. Run it before committing.
 - `make intellisense` after adding a sketch or library.
-- Toolchain: arduino-cli, `esp32:esp32:esp32` core 3.3.12. Libraries: IRremoteESP8266 2.9.0, Espalexa 2.7.0, Adafruit DHT sensor library 1.4.7, LovyanGFX 1.2.32.
+- Toolchain: arduino-cli, `esp32:esp32:esp32` core 3.3.12. Libraries: IRremoteESP8266 2.9.0, Espalexa 2.7.0, Adafruit DHT sensor library 1.4.7, Adafruit ST7735 and ST7789 + Adafruit GFX (LovyanGFX installed but garbles this TFT).
 - Port: `/dev/cu.usbserial-0001`.
 
 ## Code style
