@@ -10,6 +10,8 @@
   POST /api/say               {"text": "..."}
   POST /api/mood              {"mood": "..."}
   POST /api/think             think right now
+  GET  /api/pets              pets on Dexi and the active one
+  POST /api/pets/use          {"name": "clawd"} switch pet ("builtin" = drawn blob)
 """
 
 import json
@@ -58,6 +60,8 @@ def serve(host: str, port: int, dexi: Dexi, memory: Memory, shared: Shared, mode
                         "uptime_s": round(time.time() - shared.started)})
                 if self.path == "/api/log":
                     return self._json(list(reversed(memory.data["log"])))
+                if self.path == "/api/pets":
+                    return self._json(dexi.pets())
                 if self.path == "/api/memory":
                     d = memory.data
                     return self._json({"notes": d["notes"], "days": d["days"], "lines": d["lines"][-10:]})
@@ -87,6 +91,8 @@ def serve(host: str, port: int, dexi: Dexi, memory: Memory, shared: Shared, mode
                     return self._json(dexi.say(body["text"], secs=10))
                 if self.path == "/api/mood":
                     return self._json(dexi.mood(body["mood"]))
+                if self.path == "/api/pets/use":
+                    return self._json(dexi.use_pet(body["name"]))
                 if self.path == "/api/think":
                     shared.think_now.set()
                     return self._json({"ok": True})

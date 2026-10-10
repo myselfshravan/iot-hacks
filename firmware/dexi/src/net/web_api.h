@@ -5,6 +5,10 @@
 //   GET  /say?text=hi[&secs=8]
 //   GET  /look?x=-1..1&y=-1..1[&secs=3]
 //   GET  /hop
+//   GET  /think?secs=4           pack's "thinking" animation (the brain is thinking)
+//   GET  /pets                   {"active","pets":[{name,kb}],"free_kb"}
+//   GET  /pets/use?name=clawd    switch pet ("builtin" = the drawn blob)
+//   POST /pets/upload?name=clawd multipart .pak (dexi_brain/petpacks.py)
 //   POST /frame?secs=10          multipart file: raw 128x160 RGB565 (little-endian),
 //                                40960 bytes, shown instead of the face for secs
 #pragma once
@@ -14,12 +18,14 @@
 
 #include "../display/screen.h"
 #include "../pet/pet.h"
+#include "../pet/pet_store.h"
 #include "../input/touch.h"
 
 namespace web_api {
 
 struct Deps {
   Pet& pet;
+  PetStore& pets;
   Touch& touch;
   WifiLink& wifi;
 };

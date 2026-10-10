@@ -7,7 +7,13 @@ Layout, commands and rules are in `CLAUDE.md`. History and the original brief ar
 |---|---|---|---|
 | 1 | **IR hub** (`irhub.local`): **Kelvin** AC remote + projector page | ESP32 #1 | **Fully working:** phone page (one screen), Alexa "Room AC" (replies OK), timer (none / off in / on in, 1-8 h) and sleep, DHT22 live readings. With the 4× 220R LED, the AC obeys without aiming the LED at it. |
 | 2 | **Ambient lights** | ESP32 #2 | Plan only (`firmware/ambient-lights/README.md`). Needs ESP32 #3 and the LED strip. |
-| 3 | **Dexi** (AI desk pet) | ESP32 #2 | **v1 running** at `dexi.local`: animated face with 11 moods, speech bubbles, gaze, touch reactions, images pushed from the laptop. Brain: `services/dexi-brain`. The touch pad isn't wired yet. |
+| 3 | **Dexi** (AI desk pet) | ESP32 #2 | **v3 running** at `dexi.local`:
+- Pets: the built-in chibi blob, or the Clawd, Calico and Cloudling packs (the active one is chosen in the console).
+- Touch: gesture-aware.
+- A day/night world.
+- Wireless updates: `make ota APP=dexi`.
+
+Brain: `services/dexi-brain`. Its console at localhost:8765 has a replayable thought log, memory and a pet picker. |
 
 ## Kelvin (AC remote) features
 - Alexa device renamed **"Room AC"**, because "AC" clashes with a Control4 scene.

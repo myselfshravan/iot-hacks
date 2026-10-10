@@ -36,6 +36,21 @@ class Dexi:
     def look(self, x: float, y: float, secs: int = 3) -> dict:
         return self._get("/look", x=f"{x:.2f}", y=f"{y:.2f}", secs=secs)
 
+    def think(self, secs: int = 4) -> dict:
+        return self._get("/think", secs=secs)
+
+    def pets(self) -> dict:
+        return self._get("/pets")
+
+    def use_pet(self, name: str) -> dict:
+        return self._get("/pets/use", name=name)
+
+    def upload_pet(self, name: str, pak: bytes) -> dict:
+        r = requests.post(self.base + "/pets/upload", params={"name": name},
+                          files={"pak": (f"{name}.pak", pak)}, timeout=120)
+        r.raise_for_status()
+        return r.json()
+
     def show_image(self, image, secs: int = 10) -> dict:
         """Pushes a PIL image (any size; letterboxed to 128x160) to the screen."""
         from PIL import Image

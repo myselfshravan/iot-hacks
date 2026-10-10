@@ -12,6 +12,7 @@ dependencies = [
 
 [project.scripts]
 dexi-brain = "dexi_brain.main:main"
+dexi-pets = "dexi_brain.petpacks:main"
 
 [build-system]
 requires = ["hatchling"]

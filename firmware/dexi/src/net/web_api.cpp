@@ -32,6 +32,7 @@ String stateJson() {
   String j = "{";
   j += "\"mood\":\"" + String(mood::name(deps->pet.mood())) + "\"";
   j += ",\"base\":\"" + String(mood::name(deps->pet.baseMood())) + "\"";
+  j += ",\"pet\":\"" + deps->pets.active() + "\"";
   j += ",\"say\":\"" + jsonEscape(deps->pet.saying()) + "\"";
   const Gesture& g = deps->touch.last();
   j += ",\"gesture\":{\"id\":" + String(g.id) + ",\"presses\":" + String(g.presses) +
@@ -105,6 +106,29 @@ void begin(WebServer& server, const Deps& d) {
     sendState();
   });
   server.on("/frame", HTTP_POST, handleFrameDone, handleFrameUpload);
+  server.on("/think", HTTP_GET, [] {
+    deps->pet.think(secsArg(4));
+    sendState();
+  });
+  server.on("/pets", HTTP_GET, [] { srv->send(200, "application/json", deps->pets.listJson()); });
+  server.on("/pets/use", HTTP_GET, [] {
+    if (!deps->pets.use(srv->arg("name"))) {
+      srv->send(404, "text/plain", "no such pet");
+      return;
+    }
+    srv->send(200, "application/json", deps->pets.listJson());
+  });
+  server.on(
+      "/pets/upload", HTTP_POST,
+      [] {
+        if (deps->pets.finishUpload()) srv->send(200, "application/json", deps->pets.listJson());
+        else srv->send(400, "text/plain", "upload failed (bad name or flash full)");
+      },
+      [] {
+        HTTPUpload& up = srv->upload();
+        if (up.status == UPLOAD_FILE_START) deps->pets.beginUpload(srv->arg("name"));
+        else if (up.status == UPLOAD_FILE_WRITE) deps->pets.write(up.buf, up.currentSize);
+      });
   server.onNotFound([] { srv->send(404, "text/plain", "Not found"); });
   server.begin();
 }

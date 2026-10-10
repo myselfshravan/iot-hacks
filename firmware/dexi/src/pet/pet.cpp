@@ -133,6 +133,15 @@ void Pet::draw(GFXcanvas16& c, uint32_t now) {
   int hopY = sinceHop < kHopMs ? sinf(PI * sinceHop / kHopMs) * 16 : 0;
   int breath = ((now / 900) % 2) && !walking_ ? 1 : 0;
 
+  if (pack_ && pack_->loaded()) {
+    bool thinking = (int32_t)(thinkUntil_ - now) > 0;
+    int slot = thinking ? PetPack::kThinkingSlot : (int)mood_;
+    int bottom = world::kGroundY + 2 - hopY;
+    pack_->draw(c, slot, x, bottom, now);
+    if (talking) drawBubble(c, x);
+    return;
+  }
+
   bool asleep = st.behaviour == Behaviour::kSleep;
   int sink = asleep ? 2 * kScale : 0;  // asleep: tucks its legs under
   int x0 = x - kArtW / 2, y0 = world::kGroundY - kArtH - hopY + breath + sink;

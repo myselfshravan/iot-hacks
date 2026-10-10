@@ -6,6 +6,7 @@
 #include <Adafruit_GFX.h>
 
 #include "mood.h"
+#include "pet_pack.h"
 
 class Pet {
  public:
@@ -20,6 +21,11 @@ class Pet {
   // Points the eyes (-1..1 each axis) for `ms`.
   void lookAt(float x, float y, uint32_t ms);
   void hop();
+
+  // Draw a pet pack instead of the built-in blob (nullptr = built-in).
+  void usePack(PetPack* pack) { pack_ = pack; }
+  // Shows the pack's "thinking" animation for `ms` (the brain is thinking).
+  void think(uint32_t ms) { thinkUntil_ = millis() + ms; }
 
   void update(uint32_t now);
   void draw(GFXcanvas16& c, uint32_t now);
@@ -44,4 +50,6 @@ class Pet {
   float lookX_ = 0, lookY_ = 0;
   uint32_t holdLookUntil_ = 0, nextGlance_ = 0;
   uint32_t blinkStart_ = 0, nextBlink_ = 2000;
+  PetPack* pack_ = nullptr;
+  uint32_t thinkUntil_ = 0;
 };

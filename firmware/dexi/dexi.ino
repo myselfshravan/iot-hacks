@@ -14,6 +14,8 @@
 //   pet/mood.*          moods: eyes, mouth, colour, behaviour of each
 //   pet/sprites.h       the pixel art (16x12 chibi blob at 4x)
 //   pet/pet.*           behaviour + animation: wander, hop, sleep, effects, bubble
+//   pet/pet_pack.*      plays a GIF-derived pet pack (.pak) per mood
+//   pet/pet_store.*     packs on LittleFS + which pet is active
 //   pet/world.*         sky by real time of day (NTP), sun/moon, stars, grass, clock
 //   input/touch.*       TTP223 gesture recorder (press durations + gaps)
 //   net/web_api.*       HTTP API + pushed images
@@ -32,6 +34,7 @@
 #include "src/config.h"
 #include "src/display/screen.h"
 #include "src/pet/pet.h"
+#include "src/pet/pet_store.h"
 #include "src/pet/world.h"
 #include "src/input/touch.h"
 #include "src/net/web_api.h"
@@ -44,6 +47,7 @@ const WifiLink::Network kNetworks[] = {{WIFI_SSID, WIFI_PASSWORD}};
 
 Screen screen(config::kTftCs, config::kTftDc, config::kTftRst, config::kTftBacklight);
 Pet pet;
+PetStore pets(pet);
 Touch touch(config::kTouchPin, config::kTouchPowerPin, config::kTouchGroundPin);
 WifiLink wifi;
 WebServer server(80);
@@ -52,7 +56,7 @@ bool updating = false;  // OTA in progress: stop animating, it starves the uploa
 
 void startServices() {
   if (MDNS.begin(config::kHostname)) MDNS.addService("http", "tcp", 80);
-  web_api::begin(server, {pet, touch, wifi});
+  web_api::begin(server, {pet, pets, touch, wifi});
   ArduinoOTA.setHostname(config::kHostname);
   ArduinoOTA.onStart([] {
     updating = true;
@@ -133,6 +137,7 @@ void setup() {
   randomSeed(esp_random());
   screen.begin(config::kTftRotation, config::kTftSpiHz);
   touch.begin();
+  pets.begin();
   pet.setMood(Mood::kSleepy, 2000);  // waking up
   wifi.begin(config::kHostname, kNetworks, sizeof(kNetworks) / sizeof(kNetworks[0]));
   wifi.onFirstConnect(startServices);

@@ -273,6 +273,12 @@
       </section>
 
       <section>
+        <h2><span>pet</span><span id="petFree" class="k"></span></h2>
+        <div class="moods" id="pets"></div>
+        <span class="k">add more: <code>uv run dexi-pets upload &lt;clawd|calico|cloudling&gt;</code></span>
+      </section>
+
+      <section>
         <h2>what dexi sees</h2>
         <dl id="ctx"></dl>
       </section>
@@ -383,7 +389,21 @@
       if (f) post('/api/memory/forget', { index: Number(f) }).then(refreshMemory);
     });
 
-    refreshStatus(); refreshLog(); refreshMemory();
+    async function refreshPets() {
+      try {
+        const p = await get('/api/pets');
+        $('petFree').textContent = p.free_kb + ' KB free';
+        $('pets').replaceChildren(...p.pets.map((x) => {
+          const b = document.createElement('button');
+          b.textContent = x.name + (x.kb ? ` (${x.kb}K)` : '');
+          if (x.name === p.active) b.style.cssText = 'border-color:var(--coral);color:var(--coral)';
+          b.onclick = () => post('/api/pets/use', { name: x.name }).then(refreshPets);
+          return b;
+        }));
+      } catch { $('pets').textContent = 'dexi unreachable'; }
+    }
+
+    refreshStatus(); refreshLog(); refreshMemory(); refreshPets();
     setInterval(refreshStatus, 2000);
     setInterval(refreshLog, 5000);
     setInterval(refreshMemory, 15000);

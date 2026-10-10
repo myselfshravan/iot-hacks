@@ -5,3 +5,4 @@ secrets.h
 .venv/
 __pycache__/
 memory.json
+.petcache/

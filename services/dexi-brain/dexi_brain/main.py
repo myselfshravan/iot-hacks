@@ -79,6 +79,7 @@ def main() -> None:
                     if ctx.get("owner_away_for") == "at the laptop now":
                         memory.saw_owner()
                     summary, recent = memory.summary(), memory.recent_lines()
+                dexi.think(secs=8)  # pet packs show their "thinking" animation
                 decision = brain.think(ctx, summary, recent, event)
                 act(dexi, decision)
                 trigger = "touch: " + event if event else "console" if forced else "idle"

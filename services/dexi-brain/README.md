@@ -35,6 +35,11 @@ Set `CONSOLE_HOST=0.0.0.0` to open it from your phone.
 
 The LLM sees the last week of this, so it can make callbacks.
 
+**Pet packs:** animated pets built from clawd-on-desk's GIFs (Clawd, Calico, Cloudling).
+- `uv run dexi-pets upload clawd` downloads the GIFs, converts them and uploads to Dexi, all in one step. A pack is about 140 to 320 KB, and all three fit at once.
+- Switch pets from the console.
+- The art belongs to its owners: it is cached in `.petcache/` (git-ignored) and never committed.
+
 **Laptop compute:** `Dexi.show_image(pil_image, secs)` renders anything on the Mac and pushes it full-screen. That covers weather art, album covers, charts and generated pixel art. The face comes back after `secs` seconds.
 
 **Privacy:** with `SHARE_ACTIVE_APP=1`, the name of the frontmost app (not its contents) is sent to the LLM provider. Set it to 0 to turn this off.
