@@ -5,6 +5,7 @@
 
 const char kAcHtml[] PROGMEM = R"WEB(<!doctype html>
 <!--
+  No swing control: the indoor multi-split FCU has no louvre, so swing stays as-is.
   Kelvin, the AC remote page, served at "/".
   Edit this file, then `make build` regenerates ac_html.h (tools/embed_web.py).
   Talks to the JSON API in src/net/web_api.cpp. The projector has its own page (projector.html).
@@ -200,8 +201,6 @@ const char kAcHtml[] PROGMEM = R"WEB(<!doctype html>
       <div class="seg" id="mode"></div>
       <div class="label">Fan</div>
       <div class="seg" id="fan"></div>
-      <div class="label">Swing</div>
-      <div class="seg" id="swing"></div>
     </div>
     <div class="card">
       <div class="label">Timer</div>
@@ -295,13 +294,6 @@ const char kAcHtml[] PROGMEM = R"WEB(<!doctype html>
       $('temp').textContent = s.temp + '°';
       segment('mode', MODES, 'mode');
       segment('fan', FANS, 'fan');
-      segment('swing', [{
-        v: true,
-        label: 'on'
-      }, {
-        v: false,
-        label: 'off'
-      }], 'swing');
       segment('timer', [
         { v: 'none', label: 'none' },
         { v: 'off', label: 'off after' },
