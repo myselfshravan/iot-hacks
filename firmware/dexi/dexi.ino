@@ -1,6 +1,6 @@
 // Dexi: an AI desk pet on a 1.8" TFT (ESP32 #2).
 //
-// Dexi is a pixel-art cat living in a little world whose sky follows the real
+// Dexi is a chibi pixel creature (Clawd-style) living in a little world whose sky follows the real
 // time of day. The ESP32 keeps it alive on its own: it wanders, hops, blinks,
 // sleeps and reacts to being petted (TTP223 touch pad), with or without Wi-Fi. The brain (services/dexi-brain on the laptop) decides moods and lines
 // via an LLM and drives this board over HTTP; it can also push full-screen
@@ -12,7 +12,7 @@
 //   config.h            pins and tunables
 //   display/screen.*    TFT + off-screen canvas (flicker-free)
 //   pet/mood.*          moods: eyes, mouth, colour, behaviour of each
-//   pet/sprites.h       the pixel-art cat (16x16 at 4x)
+//   pet/sprites.h       the pixel art (16x12 chibi blob at 4x)
 //   pet/pet.*           behaviour + animation: wander, hop, sleep, effects, bubble
 //   pet/world.*         sky by real time of day (NTP), sun/moon, stars, grass, clock
 //   input/touch.*       TTP223 tap / double tap / long press

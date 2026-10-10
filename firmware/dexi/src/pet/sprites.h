@@ -1,72 +1,57 @@
-// Dexi's pixel art: a 16x16 ginger cat, drawn at 4x scale.
-// Cell codes: '.' clear, 'o' outline, 'b' body (mood tint), 'l' belly,
-// 'p' pink, 'w' white. Faces are overlays so every mood reuses the body.
+// Dexi's pixel art: a chibi blob in the style of Claude Code's Clawd and the
+// Codex pets: chunky solid body, no outline, tiny bar eyes, stubby limbs.
+// 16x12 cells drawn at 4x. Cell codes: '.' clear, 'b' body, 'h' highlight,
+// 'd' shade, 'o' ink (eyes/mouth), 'p' pink, 'w' white.
+// Faces are overlays so every mood reuses the body.
 #pragma once
 
 namespace sprites {
 
-constexpr int kSize = 16;
+constexpr int kCols = 16, kRows = 12;
 
-// Standing body, rows 0-13 (legs come from the leg frames below).
-constexpr const char* kBody[14] = {
-    "................",
-    "..oo........oo..",
-    ".opbo......obpo.",
-    ".obbboooooobbbo.",
-    "obbbbbbbbbbbbbbo",
-    "obbbbbbbbbbbbbbo",
-    "obbbbbbbbbbbbbbo",
-    "obbbbbbbbbbbbbbo",
-    "obbbbbbbbbbbbbbo",
-    "obbbllllllllbbbo",
-    "obbbllllllllbbbo",
-    "obbbllllllllbbbo",
-    ".obbbbbbbbbbbbo.",
-    "..oooooooooooo..",
+// Body rows 0-9; arms (cols 0 and 15) and legs (rows 10-11) are separate.
+constexpr const char* kBody[10] = {
+    "...hhhhhhhhhh...",
+    "..hbbbbbbbbbbb..",
+    ".hbbbbbbbbbbbbb.",
+    ".bbbbbbbbbbbbbb.",
+    ".bbbbbbbbbbbbbb.",
+    ".bbbbbbbbbbbbbb.",
+    ".bbbbbbbbbbbbbb.",
+    ".bbbbbbbbbbbbbb.",
+    ".dbbbbbbbbbbbbd.",
+    "..dddddddddddd..",
 };
 
-// Rows 14-15: standing, then the two walk frames.
+// Rows 10-11: standing, then two walk frames.
 constexpr const char* kLegs[3][2] = {
-    {"...obo....obo...", "...ooo....ooo..."},
-    {"..obo......obo..", "..ooo......ooo.."},
-    {"....obo..obo....", "....ooo..ooo...."},
+    {"..dd.dd..dd.dd..", "..dd.dd..dd.dd.."},
+    {"..dd.dd..dd.dd..", "..dd.....dd....."},
+    {"..dd.dd..dd.dd..", ".....dd.....dd.."},
 };
 
-// Curled-up loaf for sleeping: rows 6-15 of the grid.
-constexpr int kLoafTop = 6;
-constexpr const char* kLoaf[10] = {
-    "................",
-    "..oo........oo..",
-    ".opbo......obpo.",
-    ".obbboooooobbbo.",
-    "obbbbbbbbbbbbbbo",
-    "obbbbbbbbbbbbbbo",
-    "obbbllllllllbbbo",
-    "obbbllllllllbbbo",
-    "obbbbbbbbbbbbbbo",
-    ".oooooooooooooo.",
-};
+// Arm nubs: rows for down (resting) and up (waving).
+constexpr int kArmRowDown = 5, kArmRowUp = 3;
 
-// Eyes: 3 wide x 3 tall, left eye at column 3, row 5. The right eye is the
-// mirror image at column 10.
-constexpr int kEyeCol = 3, kEyeRow = 5, kRightEyeCol = 10;
+// Eyes: 3x3 at rows 2-4, left eye from col 4, right eye mirrored from col 9.
+constexpr int kEyeCol = 4, kEyeRow = 2, kRightEyeCol = 9;
 constexpr const char* kEyes[][3] = {
-    /* open   */ {"...", ".wo", ".oo"},
-    /* big    */ {".wo", ".oo", ".oo"},
-    /* closed */ {"...", "...", ".oo"},
+    /* open   */ {"...", ".o.", ".o."},
+    /* big    */ {".o.", ".o.", ".o."},
+    /* closed */ {"...", "...", "oo."},
     /* happy  */ {"...", ".o.", "o.o"},
     /* hearts */ {"...", "p.p", ".p."},
-    /* angry  */ {"o..", ".oo", ".oo"},
-    /* sleepy */ {"...", "...", "ooo"},
+    /* angry  */ {"o..", ".o.", ".o."},
+    /* sleepy */ {"...", "...", "oo."},
 };
 
-// Mouths: 4 wide x 2 tall at column 6, row 9 (on the belly).
-constexpr int kMouthCol = 6, kMouthRow = 9;
+// Mouths: 4x2 at col 6, row 6. Mostly empty: the eyes do the talking.
+constexpr int kMouthCol = 6, kMouthRow = 6;
 constexpr const char* kMouths[][2] = {
     /* none    */ {"....", "...."},
-    /* neutral */ {".oo.", "...."},
+    /* neutral */ {"....", "...."},
     /* smile   */ {"o..o", ".oo."},
-    /* open    */ {"oooo", ".pp."},
+    /* open    */ {".oo.", ".oo."},
     /* oh      */ {".oo.", ".oo."},
     /* frown   */ {".oo.", "o..o"},
     /* tongue  */ {".oo.", ".pp."},

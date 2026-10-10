@@ -5,19 +5,27 @@
 
 namespace {
 
-constexpr int kScale = 4;                         // screen px per art pixel
-constexpr int kArtPx = sprites::kSize * kScale;   // 64
-constexpr int kMinX = kArtPx / 2 + 2, kMaxX = 128 - kArtPx / 2 - 2;
+constexpr int kScale = 4;                          // screen px per art pixel
+constexpr int kArtW = sprites::kCols * kScale;     // 64
+constexpr int kArtH = sprites::kRows * kScale;     // 48
+constexpr int kMinX = kArtW / 2 + 4, kMaxX = 128 - kArtW / 2 - 4;
 constexpr uint32_t kHopMs = 450, kBlinkMs = 120;
 
-constexpr uint16_t kOutline = 0x3165, kBelly = 0xFF59, kPink = 0xFC96, kWhite = 0xFFFF;
+constexpr uint16_t kInk = 0x18E3, kPink = 0xFC96, kWhite = 0xFFFF;
 constexpr uint16_t kTear = 0x5DFF, kHeart = 0xF8B2, kSteam = 0xC618;
+
+// Lighter / darker versions of the body tint for highlight and shade.
+uint16_t shadeOf(uint16_t c, float k) {
+  int r = ((c >> 11) & 0x1F) * k, g = ((c >> 5) & 0x3F) * k, b = (c & 0x1F) * k;
+  return (min(r, 31) << 11) | (min(g, 63) << 5) | min(b, 31);
+}
 
 uint16_t cellColour(char code, uint16_t tint) {
   switch (code) {
-    case 'o': return kOutline;
+    case 'o': return kInk;
     case 'b': return tint;
-    case 'l': return kBelly;
+    case 'h': return shadeOf(tint, 1.18f);
+    case 'd': return shadeOf(tint, 0.78f);
     case 'p': return kPink;
     case 'w': return kWhite;
     default: return 0;
@@ -125,11 +133,12 @@ void Pet::draw(GFXcanvas16& c, uint32_t now) {
   int hopY = sinceHop < kHopMs ? sinf(PI * sinceHop / kHopMs) * 16 : 0;
   int breath = ((now / 900) % 2) && !walking_ ? 1 : 0;
 
-  int x0 = x - kArtPx / 2, y0 = world::kGroundY - kArtPx - hopY + breath;
+  bool asleep = st.behaviour == Behaviour::kSleep;
+  int sink = asleep ? 2 * kScale : 0;  // asleep: tucks its legs under
+  int x0 = x - kArtW / 2, y0 = world::kGroundY - kArtH - hopY + breath + sink;
   drawCat(c, x0, y0, now);
 
-  bool asleep = st.behaviour == Behaviour::kSleep;
-  int headY = asleep ? y0 + sprites::kLoafTop * kScale : y0;
+  int headY = y0;
   drawEffects(c, x, headY, now);
   if (talking) drawBubble(c, x);
 }
@@ -141,51 +150,48 @@ void Pet::drawCat(GFXcanvas16& c, int x0, int y0, uint32_t now) {
     if (code != '.') c.fillRect(x0 + col * kScale, y0 + row * kScale, kScale, kScale, cellColour(code, st.tint));
   };
 
-  // Tail behind the body, on the side away from where the cat faces; it wags.
+  // Body, then legs (hidden while asleep: it sits flat on the grass).
+  for (int r = 0; r < 10; r++)
+    for (int col = 0; col < sprites::kCols; col++) cell(col, r, sprites::kBody[r][col]);
   if (!asleep) {
-    int side = facing_ > 0 ? -1 : sprites::kSize;
-    int out = facing_ > 0 ? -1 : 1;
-    bool fastWag = mood_ == Mood::kHappy || mood_ == Mood::kExcited || mood_ == Mood::kLove;
-    int wag = (now / (fastWag ? 150 : 450)) % 2;
-    cell(side, 11, 'o');
-    cell(side, 10, 'b');
-    cell(side + out * wag, 9, 'b');
-    cell(side + out * wag, 8, 'o');
-  }
-
-  // Body.
-  if (asleep) {
-    for (int r = 0; r < 10; r++)
-      for (int col = 0; col < sprites::kSize; col++) cell(col, sprites::kLoafTop + r, sprites::kLoaf[r][col]);
-  } else {
-    for (int r = 0; r < 14; r++)
-      for (int col = 0; col < sprites::kSize; col++) cell(col, r, sprites::kBody[r][col]);
     int legs = walking_ ? 1 + (now / 180) % 2 : 0;
     for (int r = 0; r < 2; r++)
-      for (int col = 0; col < sprites::kSize; col++) cell(col, 14 + r, sprites::kLegs[legs][r][col]);
+      for (int col = 0; col < sprites::kCols; col++) cell(col, 10 + r, sprites::kLegs[legs][r][col]);
   }
 
-  // Face: eyes follow the gaze (or the walking direction), blink, and mirror.
-  Eyes eyes = st.eyes;
+  // Stubby arms: wave when happy/excited/love, otherwise rest at the sides.
+  bool waving = mood_ == Mood::kExcited || mood_ == Mood::kLove ||
+                (mood_ == Mood::kHappy && (now / 2000) % 3 == 0);
+  bool up = waving && (now / 220) % 2;
+  if (!asleep) {
+    int leftRow = up ? sprites::kArmRowUp : sprites::kArmRowDown;
+    int rightRow = waving && !up ? sprites::kArmRowUp : sprites::kArmRowDown;
+    cell(0, leftRow, 'b');
+    cell(0, leftRow + 1, 'd');
+    cell(sprites::kCols - 1, rightRow, 'b');
+    cell(sprites::kCols - 1, rightRow + 1, 'd');
+  }
+
+  // Face: eyes follow the gaze (or walking direction), blink, and mirror.
+  Eyes eyes = asleep ? Eyes::kSleepy : st.eyes;
   bool canBlink = eyes == Eyes::kOpen || eyes == Eyes::kBig || eyes == Eyes::kAngry;
   if (canBlink && now - blinkStart_ < kBlinkMs) eyes = Eyes::kClosed;
   int gx = walking_ ? facing_ : (int)roundf(lookX_);
-  int gy = asleep ? 0 : (int)roundf(lookY_);
-  int faceRow = asleep ? sprites::kLoafTop + 3 : 0;
+  int gy = asleep ? 1 : (int)roundf(lookY_);
   const char* const* e = sprites::kEyes[(int)eyes];
   for (int r = 0; r < 3; r++)
     for (int k = 0; k < 3; k++) {
-      cell(sprites::kEyeCol + gx + k, faceRow + sprites::kEyeRow + gy + r, e[r][k]);
-      cell(sprites::kRightEyeCol + gx + (2 - k), faceRow + sprites::kEyeRow + gy + r, e[r][k]);
+      cell(sprites::kEyeCol + gx + k, sprites::kEyeRow + gy + r, e[r][k]);
+      cell(sprites::kRightEyeCol + gx + (2 - k), sprites::kEyeRow + gy + r, e[r][k]);
     }
   if (!asleep) {
     const char* const* m = sprites::kMouths[(int)st.mouth];
     for (int r = 0; r < 2; r++)
       for (int k = 0; k < 4; k++) cell(sprites::kMouthCol + gx + k, sprites::kMouthRow + r, m[r][k]);
-    if (st.cheeks) {
-      cell(2, 9, 'p');
-      cell(13, 9, 'p');
-    }
+  }
+  if (st.cheeks) {
+    cell(3, 5, 'p');
+    cell(12, 5, 'p');
   }
 }
 
