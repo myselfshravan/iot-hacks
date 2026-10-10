@@ -47,6 +47,12 @@ bool PetStore::use(const String& name) {
   return true;
 }
 
+bool PetStore::remove(const String& name) {
+  if (!validName(name) || name == "builtin" || !LittleFS.exists(pathOf(name))) return false;
+  if (active_ == name) use("builtin");
+  return LittleFS.remove(pathOf(name));
+}
+
 String PetStore::listJson() {
   String j = "{\"active\":\"" + active_ + "\",\"pets\":[{\"name\":\"builtin\",\"kb\":0}";
   File dir = LittleFS.open("/pets");

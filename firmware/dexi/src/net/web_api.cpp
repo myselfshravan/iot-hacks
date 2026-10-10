@@ -118,6 +118,13 @@ void begin(WebServer& server, const Deps& d) {
     }
     srv->send(200, "application/json", deps->pets.listJson());
   });
+  server.on("/pets/delete", HTTP_GET, [] {
+    if (!deps->pets.remove(srv->arg("name"))) {
+      srv->send(404, "text/plain", "no such pet");
+      return;
+    }
+    srv->send(200, "application/json", deps->pets.listJson());
+  });
   server.on(
       "/pets/upload", HTTP_POST,
       [] {

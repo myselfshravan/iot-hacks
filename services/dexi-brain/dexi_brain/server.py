@@ -102,4 +102,12 @@ def serve(host: str, port: int, dexi: Dexi, memory: Memory, shared: Shared, mode
 
     server = ThreadingHTTPServer((host, port), Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    log.info("console: http://%s:%d", "localhost" if host in ("127.0.0.1", "0.0.0.0") else host, port)
+    shown = host
+    if host == "0.0.0.0":  # print the LAN address so it can be opened from a phone
+        import socket
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("192.0.2.1", 9))  # no packet is sent; just picks the LAN interface
+            shown = s.getsockname()[0]
+    elif host == "127.0.0.1":
+        shown = "localhost"
+    log.info("console: http://%s:%d", shown, port)

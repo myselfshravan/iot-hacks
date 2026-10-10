@@ -32,7 +32,8 @@ class Pet {
 
  private:
   void decide(uint32_t now);
-  void drawCat(GFXcanvas16& c, int x0, int y0, uint32_t now);
+  void drawBuiltin(GFXcanvas16& c, uint32_t now, int x, int hopY, int breath, bool talking);
+  void drawCat(GFXcanvas16& c, int x0, int y0, float sx, float sy, uint32_t now);
   void drawEffects(GFXcanvas16& c, int headX, int headY, uint32_t now);
   void drawBubble(GFXcanvas16& c, int headX);
 

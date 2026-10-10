@@ -13,6 +13,7 @@ class PetStore {
 
   void begin();                     // mounts LittleFS, restores the active pet
   bool use(const String& name);     // "builtin" or an uploaded pack
+  bool remove(const String& name);  // deletes a pack (switches to builtin if active)
   const String& active() const { return active_; }
   String listJson();                // {"active":..,"pets":[{"name","kb"}],"free_kb":..}
 

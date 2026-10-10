@@ -1,6 +1,6 @@
 """Pet packs: animated pets for Dexi built from GIFs.
 
-Downloads a pet's GIFs (default source: clawd-on-desk's assets/gif; the art
+Downloads a pet's GIFs (Clawd) (default source: clawd-on-desk's assets/gif; the art
 belongs to its owners, so it is cached locally and never committed), fits
 them to Dexi's screen, and writes one compact .pak that the firmware plays
 per mood (firmware/dexi/src/pet/pet_pack.*).
@@ -33,8 +33,8 @@ from .dexi import Dexi
 SOURCE = "https://raw.githubusercontent.com/rullerzhou-afk/clawd-on-desk/main/assets/gif/{pet}-{anim}.gif"
 CACHE = Path(__file__).resolve().parent.parent / ".petcache"
 BOX_W, BOX_H = 120, 96  # max on-screen sprite size (sky above, grass below)
-MAX_FPS = 8
-MAX_FRAMES = 32         # per animation
+MAX_FPS = 12
+MAX_FRAMES = 48         # per animation
 BUDGET = 1_300_000      # Dexi's LittleFS holds one pack of about this size
 
 # Mood slots, in the firmware's Mood enum order, then "thinking".
@@ -48,16 +48,6 @@ PETS = {
         "love": ["headphones-groove", "happy"], "sleepy": ["sleeping"], "sad": ["error"],
         "angry": ["react-annoyed"], "surprised": ["notification"], "hot": ["sweeping"],
         "cold": ["error"], "curious": ["idle-reading", "debugger"], "thinking": ["thinking"]}},
-    "calico": {"pixel": False, "box": (110, 76), "anims": {
-        "neutral": ["idle"], "happy": ["happy"], "excited": ["juggling", "happy"],
-        "love": ["happy"], "sleepy": ["sleeping"], "sad": ["error"], "angry": ["error"],
-        "surprised": ["notification"], "hot": ["sweeping"], "cold": ["error"],
-        "curious": ["thinking"], "thinking": ["thinking"]}},
-    "cloudling": {"pixel": False, "box": (100, 90), "anims": {
-        "neutral": ["idle"], "happy": ["juggling"], "excited": ["juggling"],
-        "love": ["idle"], "sleepy": ["sleeping"], "sad": ["error"], "angry": ["error"],
-        "surprised": ["attention", "notification"], "hot": ["sweeping"], "cold": ["error"],
-        "curious": ["idle-reading"], "thinking": ["thinking"]}},
 }
 
 
@@ -101,6 +91,12 @@ def frames_of(gif: Image.Image) -> tuple[list[Image.Image], int]:
         out.append(raw[i][0])
         t += step_ms
     return out, step_ms
+
+
+def harden(img: Image.Image) -> Image.Image:
+    """Snaps alpha to on/off (the screen has no blending) so edges stay stable."""
+    r, g, b, a = img.split()
+    return Image.merge("RGBA", (r, g, b, a.point(lambda v: 255 if v >= 110 else 0)))
 
 
 def rle(img: Image.Image) -> bytes:
@@ -175,12 +171,12 @@ def build(pet: str) -> Path:
                                               max(box[2], bb[2]), max(box[3], bb[3]))
     bw, bh = box[2] - box[0], box[3] - box[1]
     max_w, max_h = spec.get("box", (BOX_W, BOX_H))
-    # Frames are stored at half the on-screen size and drawn 2x: a quarter of
-    # the bytes, and it reads as chunky pixel art on a 1.8" screen anyway.
-    draw_scale = spec.get("scale", 2)
+    # Area-averaged downscaling (BOX) at a fixed size: nearest-neighbour at a
+    # fractional factor drops different pixel columns each frame, which shimmers.
+    draw_scale = spec.get("scale", 1)
     fit = min(max_w / bw, max_h / bh) / draw_scale
     size = (max(1, round(bw * fit)), max(1, round(bh * fit)))
-    resample = Image.NEAREST if spec["pixel"] else Image.LANCZOS
+    resample = Image.BOX
 
     header = bytearray(b"DXP1")
     header += struct.pack("<BHHB", len(names), *size, draw_scale)
@@ -190,7 +186,7 @@ def build(pet: str) -> Path:
     entries = []
     for name in names:
         frames, ms = chosen[name]
-        encoded = [rle(f.crop(box).resize(size, resample)) for f in frames]
+        encoded = [rle(harden(f.crop(box).resize(size, resample))) for f in frames]
         table_off = table_start + len(body)
         data_off = table_off + 4 * len(encoded)
         offs, cursor = [], data_off

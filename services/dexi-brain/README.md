@@ -35,8 +35,8 @@ Set `CONSOLE_HOST=0.0.0.0` to open it from your phone.
 
 The LLM sees the last week of this, so it can make callbacks.
 
-**Pet packs:** animated pets built from clawd-on-desk's GIFs (Clawd, Calico, Cloudling).
-- `uv run dexi-pets upload clawd` downloads the GIFs, converts them and uploads to Dexi, all in one step. A pack is about 140 to 320 KB, and all three fit at once.
+**Pet pack:** Clawd, built from clawd-on-desk's GIFs.
+- `uv run dexi-pets upload clawd` downloads the GIFs, converts them and uploads to Dexi, all in one step (about 600 KB).
 - Switch pets from the console.
 - The art belongs to its owners: it is cached in `.petcache/` (git-ignored) and never committed.
 

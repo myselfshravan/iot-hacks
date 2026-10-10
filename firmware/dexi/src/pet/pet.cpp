@@ -136,27 +136,49 @@ void Pet::draw(GFXcanvas16& c, uint32_t now) {
   if (pack_ && pack_->loaded()) {
     bool thinking = (int32_t)(thinkUntil_ - now) > 0;
     int slot = thinking ? PetPack::kThinkingSlot : (int)mood_;
-    int bottom = world::kGroundY + 2 - hopY;
-    pack_->draw(c, slot, x, bottom, now);
-    if (talking) drawBubble(c, x);
+    // Packs animate in place (sliding an already-animated sprite looks glitchy).
+    pack_->draw(c, slot, c.width() / 2, world::kGroundY + 2, now);
+    if (talking) drawBubble(c, c.width() / 2);
     return;
   }
+  drawBuiltin(c, now, x, hopY, breath, talking);
+}
 
+void Pet::drawBuiltin(GFXcanvas16& c, uint32_t now, int x, int hopY, int breath, bool talking) {
+  const MoodStyle& st = mood::style(mood_);
   bool asleep = st.behaviour == Behaviour::kSleep;
   int sink = asleep ? 2 * kScale : 0;  // asleep: tucks its legs under
-  int x0 = x - kArtW / 2, y0 = world::kGroundY - kArtH - hopY + breath + sink;
-  drawCat(c, x0, y0, now);
+
+  // Soft shadow on the grass; shrinks while airborne.
+  int shadowW = 26 - hopY / 2;
+  c.fillRoundRect(x - shadowW, world::kGroundY - 1, shadowW * 2, 4, 2, 0x2945);
+
+  // Squash and stretch: tall while rising, flat for a beat after landing,
+  // and a little bounce in each step while walking.
+  uint32_t sinceHop = now - hopStart_;
+  float sy = 1.0f;
+  if (sinceHop < kHopMs / 2) sy = 1.12f;
+  else if (sinceHop >= kHopMs && sinceHop < kHopMs + 120) sy = 0.82f;
+  if (walking_) breath = ((now / 180) % 2) ? -2 : 0;
+  int h = kArtH * sy, w = kArtW * (2.0f - sy);
+  int x0 = x - w / 2, y0 = world::kGroundY - h - hopY + breath + sink;
+  drawCat(c, x0, y0, w / (float)kArtW, h / (float)kArtH, now);
 
   int headY = y0;
   drawEffects(c, x, headY, now);
   if (talking) drawBubble(c, x);
 }
 
-void Pet::drawCat(GFXcanvas16& c, int x0, int y0, uint32_t now) {
+void Pet::drawCat(GFXcanvas16& c, int x0, int y0, float sx, float sy, uint32_t now) {
   const MoodStyle& st = mood::style(mood_);
   bool asleep = st.behaviour == Behaviour::kSleep;
+  // Cells are scaled by sx/sy for squash and stretch; edges are rounded so
+  // neighbouring cells always meet without gaps.
   auto cell = [&](int col, int row, char code) {
-    if (code != '.') c.fillRect(x0 + col * kScale, y0 + row * kScale, kScale, kScale, cellColour(code, st.tint));
+    if (code == '.') return;
+    int xa = x0 + (int)roundf(col * kScale * sx), xb = x0 + (int)roundf((col + 1) * kScale * sx);
+    int ya = y0 + (int)roundf(row * kScale * sy), yb = y0 + (int)roundf((row + 1) * kScale * sy);
+    c.fillRect(xa, ya, xb - xa, yb - ya, cellColour(code, st.tint));
   };
 
   // Body, then legs (hidden while asleep: it sits flat on the grass).

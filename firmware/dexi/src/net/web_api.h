@@ -8,6 +8,7 @@
 //   GET  /think?secs=4           pack's "thinking" animation (the brain is thinking)
 //   GET  /pets                   {"active","pets":[{name,kb}],"free_kb"}
 //   GET  /pets/use?name=clawd    switch pet ("builtin" = the drawn blob)
+//   GET  /pets/delete?name=clawd
 //   POST /pets/upload?name=clawd multipart .pak (dexi_brain/petpacks.py)
 //   POST /frame?secs=10          multipart file: raw 128x160 RGB565 (little-endian),
 //                                40960 bytes, shown instead of the face for secs
