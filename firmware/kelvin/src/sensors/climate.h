@@ -14,8 +14,8 @@ class Climate {
  public:
   enum class Confirm { kNone, kPending, kConfirmed, kUnconfirmed };
 
-  // Flip to DHT22 if the module is the white one (DHT11 is blue).
-  static constexpr uint8_t kType = DHT11;
+  // White module = DHT22 (blue would be DHT11).
+  static constexpr uint8_t kType = DHT22;
   static constexpr float kReactionC = 1.5;       // movement that counts as a reaction
   static constexpr uint32_t kWindowMs = 180000;  // how long to wait for it
   static constexpr uint32_t kReadEveryMs = 5000;

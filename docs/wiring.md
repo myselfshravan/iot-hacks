@@ -58,9 +58,9 @@ have the pull-up built in; a bare 4-pin sensor needs 10k between DATA and VCC.
 
 | Module pin | ESP32 |
 |---|---|
-| VCC | D33 (driven HIGH = 3.3 V; sensor draws ~2 mA). Not 5 V: the pull-up would put 5 V on the data pin |
-| DATA | D25 (column j, female jumper or breadboard row of D25) |
-| GND | GND |
+| VCC | D33 (hole j9; driven HIGH = 3.3 V; sensor draws ~2 mA). Not 5 V: the pull-up would put 5 V on the data pin |
+| DATA | D25 (hole j8) |
+| GND | d21 (receiver GND row) |
 
 For "AC reacted" confirmation, put the sensor in the FCU's outlet airflow, using a
 long female-female lead. On the desk it only reports room readings.

@@ -32,7 +32,7 @@ Layout, commands and rules are in `CLAUDE.md`. History and the original brief ar
 ## Next steps
 1. **Wire the DHT and flash v2:**
    - DHT data goes to GPIO 25 (column j), VCC to GPIO 33 (driven HIGH), GND to GND (see `docs/wiring.md`).
-   - Set `Climate::kType` in `climate.h` to the right model: blue is DHT11, white is DHT22.
+   - Sensor is a DHT22 (white); already set in `climate.h`.
    - Then run `make flash`.
 2. **Test plan:**
    - `kelvin.local` → IR sent ✓.

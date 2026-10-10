@@ -46,6 +46,13 @@ WebServer server(80);
 web_api::Deps deps{ac, ir, climate, led, wifi};
 bool servicesUp = false;
 
+// secrets.h lists one or more networks; Kelvin joins whichever is in range.
+#ifdef WIFI_NETWORKS
+const WifiLink::Network kNetworks[] = WIFI_NETWORKS;
+#else
+const WifiLink::Network kNetworks[] = {{WIFI_SSID, WIFI_PASSWORD}};
+#endif
+
 void startServices() {
   if (MDNS.begin(config::kHostname)) MDNS.addService("http", "tcp", 80);
   web_api::registerRoutes(server, deps);
@@ -71,7 +78,7 @@ void setup() {
   ac.begin();
   ac.onChange(alexa::reflect);
   serial_console::begin(ac, [] { return web_api::healthJson(deps); });
-  wifi.begin(config::kHostname, WIFI_SSID, WIFI_PASSWORD);
+  wifi.begin(config::kHostname, kNetworks, sizeof(kNetworks) / sizeof(kNetworks[0]));
   wifi.onFirstConnect(startServices);
   startWatchdog();
 }
