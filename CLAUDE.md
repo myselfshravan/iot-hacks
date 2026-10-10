@@ -1,0 +1,37 @@
+# esp32-hacks
+
+Home hardware hacks on ESP32. The owner is a software engineer who is new to
+electronics, so explain the circuit and give exact pins. Read `HANDOFF.md` first
+for the current status.
+
+## Layout
+| Path | What |
+|---|---|
+| `firmware/<product>/` | Production sketches, one folder per device. Each is self-contained. |
+| `firmware/kelvin/` | ESP32 #1: **Kelvin**, the Wi-Fi AC remote (main project). Code map at the top of `kelvin.ino`; UI in `src/web/index.html` |
+| `firmware/ambient-lights/` | ESP32 #2: WS2812B monitor sync (WLED + HyperHDR); plan only |
+| `firmware/lexi/` | ESP32 #3: Lexi, the AI desk pet on a 1.8" TFT; plan only |
+| `experiments/` | Lab notebook: numbered one-off sketches. Don't edit; copy ideas into `firmware/`. |
+| `captures/` | Decoded protocols (`*.md`) + verbatim serial logs (`raw/`, never edit) |
+| `docs/` | `hardware.md` (boards, pins, parts), `wiring.md`, `to-buy.md`, `journal.md` (history) |
+| `tools/` | `serial_log.py` (log/send over serial), `embed_web.py` (HTML → header), `vscode_intellisense.py` |
+
+## Commands
+- `make flash APP=kelvin` builds and flashes (`APP=experiments/06_ir_tx` also works).
+- `make monitor` and `make log NAME=x SECONDS=60` (log saved to `captures/raw/x.log`).
+- `make check` compiles every sketch. Run it before committing.
+- `make intellisense` after adding a sketch or library.
+- Toolchain: arduino-cli, `esp32:esp32:esp32` core 3.3.12. Libraries: IRremoteESP8266 2.9.0, Espalexa 2.7.0, Adafruit DHT sensor library 1.4.7.
+- Port: `/dev/cu.usbserial-0001`.
+
+## Code style
+- Product sketches: thin `.ino` (wiring + setup/loop), modules under `src/<area>/` as `.h` + `.cpp`, pins/tunables in `src/config.h`.
+- Web UI is real HTML in `src/web/`; never edit the generated `*_html.h` (`make build` regenerates it).
+
+## Rules
+- Wi-Fi credentials go in `secrets.h`, which is git-ignored. Copy `secrets.example.h`. The user types the password themselves.
+- One serial logger at a time. Run `pgrep -fl serial_log` before starting one.
+- If an upload fails with `termios.error 22`, ask the user to replug the USB cable.
+- Known facts go in docs and captures. Label anything unverified as a hypothesis.
+- Temp files go in the session scratchpad, never in the repo.
+- Stop before `git push`.

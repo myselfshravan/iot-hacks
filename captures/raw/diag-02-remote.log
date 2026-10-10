@@ -1,0 +1,191 @@
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:4876
+ho 0 tail 12 room 4
+load:0x40078000,len:16532
+load:0x40080400,len:3500
+entry 0x400805b4
+
+=== IR receiver diagnostic (OUT=GPIO14, VCC=GPIO27) ===
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=  72  lowUs= 36806  <-- IR ACTIVITY
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=  72  lowUs= 37142  <-- IR ACTIVITY
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=  72  lowUs= 36837  <-- IR ACTIVITY
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=  72  lowUs= 36827  <-- IR ACTIVITY
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=  68  lowUs= 27343  <-- IR ACTIVITY
+mV=3126  edges=   8  lowUs= 19130  <-- IR ACTIVITY
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=  68  lowUs= 27308  <-- IR ACTIVITY
+mV=3126  edges=   4  lowUs=  9566  <-- IR ACTIVITY
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=  72  lowUs= 36820  <-- IR ACTIVITY
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=  56  lowUs= 23963  <-- IR ACTIVITY
+mV=3126  edges=  15  lowUs= 12819  <-- IR ACTIVITY
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=  72  lowUs= 36829  <-- IR ACTIVITY
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   1  lowUs=  1237  <-- IR ACTIVITY
+mV= 128  edges=  75  lowUs= 44881  <-- IR ACTIVITY
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=   0  lowUs=     0  
+mV=3126  edges=  72  lowUs= 37134  <-- IR ACTIVITY
