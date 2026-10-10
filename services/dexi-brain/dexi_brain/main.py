@@ -22,6 +22,7 @@ def act(dexi: Dexi, decision: dict) -> None:
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
+    logging.getLogger("httpx").setLevel(logging.WARNING)  # one line per LLM call is noise
     cfg = config.load()
     dexi = Dexi(cfg.dexi_url)
     brain = Brain(cfg.llm_base_url, cfg.llm_api_key, cfg.llm_model, cfg.owner)
