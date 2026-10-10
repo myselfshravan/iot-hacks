@@ -15,3 +15,33 @@ Serial: set mode=cool temp=24 fan=low swing=1 power=1 | state | health
 Wi-Fi trying Sukhada_Home
 Wi-Fi OK  IP=192.168.31.162  RSSI=-50 dBm
 READY  http://irhub.local  or  http://192.168.31.162
+RX 0x0C101B1F08
+{"power":true,"mode":"cool","temp":30,"fan":"low","swing":true,"source":"remote","seq":1,"echo_ok":null,"confirm":"none","air_c":28.6,"air_rh":39.3,"rssi":-49}
+RX 0x0C102B1F00
+{"power":false,"mode":"cool","temp":30,"fan":"low","swing":true,"source":"remote","seq":2,"echo_ok":null,"confirm":"pending","air_c":28.6,"air_rh":39.3,"rssi":-49}
+RX 0x0C202B1F00 (unknown layout)
+RX 0x0C302B1F00 (unknown layout)
+RX 0x0C402B1F00 (unknown layout)
+RX 0x0C302B1F00 (unknown layout)
+RX 0x0C202B1F00 (unknown layout)
+RX 0x0C102B1F00
+RX 0x0C808B1F08 (unknown layout)
+RX 0x0C100B1F08
+{"power":true,"mode":"cool","temp":30,"fan":"low","swing":true,"source":"remote","seq":3,"echo_ok":null,"confirm":"pending","air_c":28.5,"air_rh":39.2,"rssi":-49}
+RX 0x0C100B1308
+{"power":true,"mode":"cool","temp":18,"fan":"low","swing":true,"source":"remote","seq":4,"echo_ok":null,"confirm":"none","air_c":28.7,"air_rh":39.7,"rssi":-49}
+RX 0x0C801B1308 (unknown layout)
+RX 0x0C701B1308 (unknown layout)
+RX 0x0C601B1308 (unknown layout)
+RX 0x0C501B1308 (unknown layout)
+RX 0x0C401B1308 (unknown layout)
+RX 0x0C301B1308 (unknown layout)
+RX 0x0C201B1308 (unknown layout)
+RX 0x0C101B1308
+RX 0x0C102B1300
+{"power":false,"mode":"cool","temp":18,"fan":"low","swing":true,"source":"remote","seq":5,"echo_ok":null,"confirm":"pending","air_c":28.8,"air_rh":40.0,"rssi":-49}
+RX 0x0C100B1308
+{"power":true,"mode":"cool","temp":18,"fan":"low","swing":true,"source":"remote","seq":6,"echo_ok":null,"confirm":"pending","air_c":28.9,"air_rh":40.0,"rssi":-49}
+RX 0x0C101B1308
+RX 0x0C100B1300
+{"power":false,"mode":"cool","temp":18,"fan":"low","swing":true,"source":"remote","seq":7,"echo_ok":null,"confirm":"pending","air_c":28.9,"air_rh":40.0,"rssi":-49}

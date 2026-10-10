@@ -124,6 +124,16 @@ const char kAcHtml[] PROGMEM = R"WEB(<!doctype html>
       background: var(--acc);
     }
 
+    .hours {
+      align-items: center;
+    }
+
+    .hours b {
+      flex: 1;
+      text-align: center;
+      font-size: 20px;
+    }
+
     .badges {
       display: flex;
       gap: 8px;
@@ -193,6 +203,16 @@ const char kAcHtml[] PROGMEM = R"WEB(<!doctype html>
       <div class="label">Swing</div>
       <div class="seg" id="swing"></div>
     </div>
+    <div class="card">
+      <div class="label">Timer</div>
+      <div class="seg" id="timer"></div>
+      <div class="label">Timer hours</div>
+      <div class="seg hours">
+        <button data-dh="-1">&minus;</button><b id="hours">--</b><button data-dh="1">+</button>
+      </div>
+      <div class="label">Sleep</div>
+      <div class="seg" id="sleep"></div>
+    </div>
     <div class="card air">
       <div><span id="airC">--</span><small>air °C</small></div>
       <div><span id="airRh">--</span><small>humidity %</small></div>
@@ -205,6 +225,7 @@ const char kAcHtml[] PROGMEM = R"WEB(<!doctype html>
     const $ = (id) => document.getElementById(id);
     const MODES = ['cool', 'dry', 'fan', 'heat', 'auto'];
     const FANS = ['auto', 'low', 'medium', 'high'];
+    const ON_OFF = [{ v: true, label: 'on' }, { v: false, label: 'off' }];
     const CONFIRM = {
       pending: ['wait', 'AC reacting…'],
       confirmed: ['ok', 'AC reacted ✓'],
@@ -281,6 +302,9 @@ const char kAcHtml[] PROGMEM = R"WEB(<!doctype html>
         v: false,
         label: 'off'
       }], 'swing');
+      segment('timer', ON_OFF, 'timer');
+      segment('sleep', ON_OFF, 'sleep');
+      $('hours').textContent = s.hours + ' h';
 
       if (s.source === 'remote') badge('echo', 'ok', 'IR: from remote');
       else if (s.echo_ok === true) badge('echo', 'ok', 'IR sent ✓');
@@ -297,6 +321,11 @@ const char kAcHtml[] PROGMEM = R"WEB(<!doctype html>
 
     $('power').onclick = () => setAc({
       power: !state.power
+    });
+    document.querySelectorAll('[data-dh]').forEach((b) => {
+      b.onclick = () => setAc({
+        hours: Math.min(8, Math.max(1, state.hours + Number(b.dataset.dh)))
+      });
     });
     document.querySelectorAll('[data-dt]').forEach((b) => {
       b.onclick = () => setAc({

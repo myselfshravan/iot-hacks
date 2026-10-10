@@ -46,6 +46,23 @@ so any state can be synthesised.
 - Fan button from Low: N4 low bits 3 → 0 (auto) → 1 (high) → 2 (medium) → 3 (low).
 - Swing button: N4 = 11 → 3 → 11 (bit 3 toggles).
 
-## Unknown / not captured yet
+## Timer / Sleep (capture 2026-10-10, `raw/wavess-04-timer-sleep.log`, hypotheses)
 
-Timer, Time +/-, Sleep, T cool, T warm. Candidates: N1, N5, N6, N9.
+Presses: Timer ×2, Time+ ×3, Time− ×3, Sleep ×2, T cool ×2, T warm ×2.
+Only 9 frames arrived; nibbles shown are N0 N2 N4 N5 N7.
+
+| Frame | N0 | N5 | N7 | Likely button |
+|---|---|---|---|---|
+| 0x0C101B1F08 | 8 (on) | 1 | 1 | Timer #1 |
+| 0x0C102B1F00 | 0 (off) | 2 | 1 | Timer #2 |
+| 0x0C202B1F00 / 302 / 402 | 0 | 2 | 2, 3, 4 | Time + ×3 |
+| 0x0C302B1F00 / 202 / 102 | 0 | 2 | 3, 2, 1 | Time − ×3 |
+| 0x0C808B1F08 | 8 | 8 | 8 | Sleep #1 |
+| 0x0C100B1F08 | 8 | 0 | 1 | Sleep #2 (back to normal) |
+
+- **N7 is the timer hours (1-8)**, not a constant. Time + / Time − step it by 1. It reads 8 in the Sleep frame.
+- **N5 is the timer/sleep mode:** 0 none, 1 timer on, 2 timer off (or adjusting with the timer off), 8 sleep.
+  The user confirmed that Timer toggles the timer on and off, and Time ± go 1 ↔ 8 h.
+- The timer-off frame (N5 = 2) clears the power bit while the AC stays on, so decoders ignore power in N5 = 2 frames.
+- **T cool / T warm:** these buttons do nothing on the remote's display either, so they are ignored.
+- Kelvin's encoder reproduces the Timer #1 frame (0x0C101B1F08) and the Sleep #1 frame (0x0C808B1F08) bit-exact.

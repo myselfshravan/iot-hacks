@@ -29,7 +29,8 @@ class AcController {
   const wavess::State& state() const { return state_; }
   String json() const;
 
-  // Parses one "key=value" field (power, mode, temp, fan, swing) into `s`.
+  // Parses one "key=value" field (power, mode, temp, fan, swing, timer,
+  // hours, sleep) into `s`.
   static bool applyField(wavess::State& s, const String& key, const String& value);
 
  private:

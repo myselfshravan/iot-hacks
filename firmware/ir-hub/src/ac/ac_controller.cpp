@@ -45,7 +45,7 @@ void AcController::command(const wavess::State& next, const char* source) {
 
 void AcController::onIrFrame(const decode_results& frame) {
   uint64_t bits;
-  wavess::State seen;
+  wavess::State seen = state_;
   if (!wavess::fromRaw(frame, &bits)) return;
   // Log every WAVESS-shaped frame, so unknown buttons (timer, sleep...) can be
   // captured and decoded from the serial log.
@@ -98,6 +98,9 @@ String AcController::json() const {
   j += ",\"temp\":" + String(state_.temp);
   j += ",\"fan\":\"" + String(kFans[state_.fan]) + "\"";
   j += ",\"swing\":" + String(state_.swing ? "true" : "false");
+  j += ",\"timer\":" + String(state_.timer ? "true" : "false");
+  j += ",\"hours\":" + String(state_.timerHours);
+  j += ",\"sleep\":" + String(state_.sleep ? "true" : "false");
   j += ",\"source\":\"" + String(source_) + "\"";
   j += ",\"seq\":" + String(seq_);
   j += ",\"echo_ok\":" + String(echo_ < 0 ? "null" : echo_ ? "true" : "false");
@@ -114,6 +117,16 @@ bool AcController::applyField(wavess::State& s, const String& key, const String&
     s.power = parseBool(value);
   } else if (key == "swing") {
     s.swing = parseBool(value);
+  } else if (key == "timer") {
+    s.timer = parseBool(value);
+    if (s.timer) s.sleep = false;
+  } else if (key == "sleep") {
+    s.sleep = parseBool(value);
+    if (s.sleep) s.timer = false;
+  } else if (key == "hours") {
+    int h = value.toInt();
+    if (h < kMinTimerHours || h > kMaxTimerHours) return false;
+    s.timerHours = h;
   } else if (key == "temp") {
     int t = value.toInt();
     if (t < kMinTemp || t > kMaxTemp) return false;
