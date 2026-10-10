@@ -18,7 +18,9 @@ Reply with ONLY a JSON object:
 {{"mood": one of {moods},
  "say": a line of at most 70 characters, or "" to stay quiet,
  "look": [x, y] with x and y between -1 and 1 for where Dexi glances,
- "remember": a short fact worth keeping for future days, or ""}}
+ "remember": a durable fact about {owner} worth knowing on future days (a habit,
+   preference, routine, plan or something they told you), or "". Never store
+   status like counts, the time or what you are doing right now.}}
 
 Rules:
 - Stay quiet about half the time on idle ticks, unless something changed.

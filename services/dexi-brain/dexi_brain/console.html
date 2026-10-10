@@ -1,0 +1,393 @@
+<!doctype html>
+<!--
+  Dexi console: served by the brain at http://localhost:8765 (dexi_brain/server.py).
+  Live status, replayable thought log, memory, and controls.
+-->
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>dexi console</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #11161d;
+      --line: #1f2731;
+      --fg: #d6dde6;
+      --dim: #7d8794;
+      --green: #7ee787;
+      --amber: #f2cc60;
+      --coral: #d97757;
+      --red: #ff7b72;
+      --blue: #79c0ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 13px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 18px;
+      align-items: center;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 1;
+    }
+
+    header b {
+      color: var(--coral);
+    }
+
+    .k {
+      color: var(--dim);
+    }
+
+    .ok {
+      color: var(--green);
+    }
+
+    .warn {
+      color: var(--amber);
+    }
+
+    .err {
+      color: var(--red);
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+      gap: 12px;
+      padding: 12px 16px;
+    }
+
+    @media (max-width: 820px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      min-width: 0;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--dim);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+      color: var(--fg);
+      background: #18202a;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:hover {
+      border-color: var(--coral);
+      color: var(--coral);
+    }
+
+    input {
+      width: 100%;
+    }
+
+    .row {
+      display: flex;
+      gap: 6px;
+    }
+
+    #log {
+      max-height: calc(100vh - 150px);
+      overflow: auto;
+    }
+
+    .entry {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 2px 10px;
+      padding: 6px 2px;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .entry .t {
+      color: var(--dim);
+      white-space: nowrap;
+    }
+
+    .entry .say {
+      color: var(--fg);
+      word-break: break-word;
+    }
+
+    .entry .say.quiet {
+      color: var(--dim);
+      font-style: italic;
+    }
+
+    .entry .meta {
+      grid-column: 2;
+      color: var(--dim);
+      font-size: 12px;
+    }
+
+    .tag {
+      color: var(--blue);
+    }
+
+    .mood {
+      color: var(--amber);
+    }
+
+    .rem {
+      color: var(--green);
+    }
+
+    dl {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2px 12px;
+      margin: 0;
+    }
+
+    dt {
+      color: var(--dim);
+    }
+
+    dd {
+      margin: 0;
+      word-break: break-word;
+    }
+
+    ul {
+      list-style: none;
+      margin: 0 0 8px;
+      padding: 0;
+      max-height: 260px;
+      overflow: auto;
+    }
+
+    li {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+      padding: 3px 0;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    li button {
+      padding: 0 6px;
+    }
+
+    .moods {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    td,
+    th {
+      text-align: left;
+      padding: 2px 4px;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    th {
+      color: var(--dim);
+      font-weight: normal;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <span><b>dexi</b><span class="k">@brain</span> <span class="k">~ $</span></span>
+    <span><span class="k">status</span> <span id="status">…</span></span>
+    <span><span class="k">mood</span> <span id="mood" class="mood">…</span></span>
+    <span><span class="k">next thought</span> <span id="next">…</span></span>
+    <span><span class="k">model</span> <span id="model">…</span></span>
+  </header>
+
+  <main>
+    <section>
+      <h2><span>thought log</span><input id="filter" placeholder="filter: slack, touch, sleepy…" style="width:220px"></h2>
+      <div id="log"></div>
+    </section>
+
+    <div class="col">
+      <section>
+        <h2>control</h2>
+        <div class="moods" id="moods"></div>
+        <form class="row" id="sayForm">
+          <input id="sayText" maxlength="76" placeholder="make dexi say…" autocomplete="off">
+          <button>say</button>
+        </form>
+        <div class="row" style="margin-top:6px">
+          <button id="think">think now</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>what dexi sees</h2>
+        <dl id="ctx"></dl>
+      </section>
+
+      <section>
+        <h2><span>memory</span><span id="noteCount" class="k"></span></h2>
+        <ul id="notes"></ul>
+        <form class="row" id="noteForm">
+          <input id="noteText" maxlength="140" placeholder="teach dexi something…" autocomplete="off">
+          <button>add</button>
+        </form>
+      </section>
+
+      <section>
+        <h2>days</h2>
+        <table>
+          <thead>
+            <tr><th>date</th><th>pets</th><th>first</th><th>last</th></tr>
+          </thead>
+          <tbody id="days"></tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const MOODS = ['neutral', 'happy', 'excited', 'love', 'sleepy', 'sad', 'angry', 'surprised', 'hot', 'cold', 'curious'];
+    let logData = [];
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const get = (url) => fetch(url).then((r) => r.json());
+    const post = (url, body) => fetch(url, { method: 'POST', body: JSON.stringify(body || {}) }).then((r) => r.json());
+
+    function when(iso) {
+      const d = new Date(iso);
+      const today = new Date().toDateString() === d.toDateString();
+      return (today ? '' : d.toLocaleDateString([], { day: '2-digit', month: 'short' }) + ' ') +
+        d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderLog() {
+      const f = $('filter').value.toLowerCase();
+      const rows = logData.filter((e) => !f || JSON.stringify(e).toLowerCase().includes(f));
+      $('log').innerHTML = rows.map((e) => `
+        <div class="entry">
+          <span class="t">${when(e.time)}</span>
+          <span class="say ${e.say ? '' : 'quiet'}">${e.say ? '“' + esc(e.say) + '”' : '(stayed quiet)'}</span>
+          <button data-replay="${e.id}" title="replay on Dexi">▶</button>
+          <span class="meta"><span class="tag">${esc(e.trigger)}</span>${e.app ? ' · in ' + esc(e.app) : ''} · <span class="mood">${esc(e.mood)}</span>${e.remember ? ' · <span class="rem">remembered: ' + esc(e.remember) + '</span>' : ''}</span>
+        </div>`).join('') || '<span class="k">no thoughts yet</span>';
+    }
+
+    async function refreshStatus() {
+      try {
+        const s = await get('/api/status');
+        const st = $('status');
+        st.textContent = s.status;
+        st.className = s.status === 'online' ? 'ok' : s.status === 'thinking' ? 'warn' : 'err';
+        $('mood').textContent = (s.dexi.mood || '?') + (s.dexi.touching ? ' · being touched' : '');
+        $('next').textContent = s.next_think_s + 's';
+        $('model').textContent = s.model;
+        const c = s.context || {};
+        $('ctx').innerHTML = Object.entries({ time: c.time, outside: c.weather_outside, you: c.owner_away_for, app: c.owner_is_using, dexi: s.dexi_url })
+          .filter(([, v]) => v).map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('');
+      } catch {
+        $('status').textContent = 'brain offline';
+        $('status').className = 'err';
+      }
+    }
+
+    async function refreshLog() {
+      logData = await get('/api/log');
+      renderLog();
+    }
+
+    async function refreshMemory() {
+      const m = await get('/api/memory');
+      $('noteCount').textContent = m.notes.length + ' notes';
+      $('notes').innerHTML = m.notes.map((n, i) =>
+        `<li><span><span class="k">${n.date}</span> ${esc(n.text)}</span><button data-forget="${i}" title="forget">×</button></li>`
+      ).join('') || '<li class="k">nothing yet</li>';
+      $('days').innerHTML = Object.entries(m.days).sort().reverse().slice(0, 14).map(([d, v]) =>
+        `<tr><td>${d}</td><td>${v.pets}</td><td>${v.first_seen || '-'}</td><td>${v.last_seen || '-'}</td></tr>`).join('');
+    }
+
+    $('moods').replaceChildren(...MOODS.map((m) => {
+      const b = document.createElement('button');
+      b.textContent = m;
+      b.onclick = () => post('/api/mood', { mood: m }).then(refreshStatus);
+      return b;
+    }));
+    $('sayForm').onsubmit = (e) => {
+      e.preventDefault();
+      if ($('sayText').value.trim()) post('/api/say', { text: $('sayText').value.trim() });
+      $('sayText').value = '';
+    };
+    $('noteForm').onsubmit = (e) => {
+      e.preventDefault();
+      if ($('noteText').value.trim()) post('/api/memory/note', { text: $('noteText').value.trim() }).then(refreshMemory);
+      $('noteText').value = '';
+    };
+    $('think').onclick = () => post('/api/think').then(() => setTimeout(() => { refreshStatus(); refreshLog(); }, 4000));
+    $('filter').oninput = renderLog;
+    document.addEventListener('click', (e) => {
+      const r = e.target.dataset.replay, f = e.target.dataset.forget;
+      if (r) post('/api/replay', { id: Number(r) });
+      if (f) post('/api/memory/forget', { index: Number(f) }).then(refreshMemory);
+    });
+
+    refreshStatus(); refreshLog(); refreshMemory();
+    setInterval(refreshStatus, 2000);
+    setInterval(refreshLog, 5000);
+    setInterval(refreshMemory, 15000);
+  </script>
+</body>
+
+</html>

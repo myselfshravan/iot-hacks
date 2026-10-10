@@ -1,24 +1,22 @@
-"""Main loop: watch Dexi's touch pad, think on events and every THINK_EVERY_S.
+"""Main loop: watch Dexi's touch pad, think on gestures and every THINK_EVERY_S.
 
-Touch gestures (counted by the firmware, read from /state):
-  tap         -> Dexi says something clever or fun (LLM)
-  double tap  -> info card: now playing if music is on, else time + weather
-  long press  -> a cuddle; Dexi responds warmly (LLM)
+Touch is read as whole gestures (press durations + gaps, recorded by the
+firmware); gestures.describe() turns them into words and the LLM decides how
+Dexi responds. A double-tap-like pair of quick presses also shows an info card.
 """
 
 import logging
 import time
 
-from . import cards, config, context
+from . import cards, config, context, gestures
 from .dexi import Dexi
 from .llm import Brain
 from .memory import Memory
+from .server import serve
+from .state import Shared
 
 POLL_S = 1
 CARD_SECS = 8
-TAP_EVENT = ("you were poked once: say something clever, curious or funny that fits "
-             "the moment (a thought, a fact, a joke, a callback to memory)")
-CUDDLE_EVENT = "you are getting a long cuddle: respond warmly"
 
 log = logging.getLogger("dexi-brain")
 
@@ -39,50 +37,69 @@ def show_card(dexi: Dexi, cfg: config.Config) -> None:
     log.info("card: %s", f"{song['track']} - {song['artist']}" if song else "time + weather")
 
 
+def is_double_tap(g: dict) -> bool:
+    return g.get("presses") == 2 and max(g.get("press_ms") or [0]) < 300 and \
+        (g.get("gap_ms") or [999])[0] < 300
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
-    logging.getLogger("httpx").setLevel(logging.WARNING)  # one line per LLM call is noise
+    for noisy in ("httpx", "openai", "httpcore"):  # one line per LLM call is noise
+        logging.getLogger(noisy).setLevel(logging.WARNING)
     cfg = config.load()
     dexi = Dexi(cfg.dexi_url)
     brain = Brain(cfg.llm_base_url, cfg.llm_api_key, cfg.llm_model, cfg.owner)
     memory = Memory()
+    shared = Shared()
+    serve(cfg.console_host, cfg.console_port, dexi, memory, shared, cfg.llm_model)
     log.info("brain up: %s via %s, Dexi at %s (%s)", cfg.llm_model, cfg.llm_base_url,
              cfg.dexi_url, dexi.base)
 
-    seen = None  # last (taps, double_taps, long_presses) from the firmware
-    next_think = 0.0
+    last_gesture = None
     while True:
         try:
             st = dexi.state()
-            counts = (st.get("taps", 0), st.get("double_taps", 0), st.get("long_presses", 0))
-            taps, doubles, longs = (max(0, a - b) for a, b in zip(counts, seen)) if seen else (0, 0, 0)
-            seen = counts
-            if taps or longs:
-                memory.petted(taps + longs)
+            g = st.get("gesture", {})
+            event = None
+            if last_gesture is not None and g.get("id", 0) > last_gesture:
+                memory.petted()
+                event = gestures.describe(g)
+                if is_double_tap(g):
+                    show_card(dexi, cfg)
+            last_gesture = g.get("id", 0)
+            with shared.lock:
+                shared.dexi_state, shared.status = st, "online"
 
-            event = CUDDLE_EVENT if longs else TAP_EVENT if taps else None
-            if doubles:
-                show_card(dexi, cfg)
-
-            if event or time.time() >= next_think:
+            forced = shared.think_now.is_set()
+            if event or forced or time.time() >= shared.next_think:
+                shared.think_now.clear()
                 ctx = context.gather(cfg.latitude, cfg.longitude, cfg.share_active_app)
-                if ctx.get("owner_away_for") == "at the laptop now":
-                    memory.saw_owner()
-                decision = brain.think(ctx, memory.summary(), memory.recent_lines(), event)
+                with shared.lock:
+                    shared.status = "thinking"
+                    if ctx.get("owner_away_for") == "at the laptop now":
+                        memory.saw_owner()
+                    summary, recent = memory.summary(), memory.recent_lines()
+                decision = brain.think(ctx, summary, recent, event)
                 act(dexi, decision)
-                memory.said(decision["say"])
-                if decision["remember"]:
-                    memory.note(decision["remember"])
-                memory.save()
-                log.info("%s -> %s %r%s", "tap" if taps else "cuddle" if longs else "idle",
-                         decision["mood"], decision["say"],
+                trigger = "touch: " + event if event else "console" if forced else "idle"
+                with shared.lock:
+                    memory.said(decision["say"])
+                    if decision["remember"]:
+                        memory.note(decision["remember"])
+                    memory.log(trigger, ctx, decision)
+                    memory.save()
+                    shared.last_context = ctx
+                    shared.next_think = time.time() + cfg.think_every_s
+                    shared.status = "online"
+                log.info("%s -> %s %r%s", trigger, decision["mood"], decision["say"],
                          f" [remembered: {decision['remember']}]" if decision["remember"] else "")
-                next_think = time.time() + cfg.think_every_s
         except Exception as e:  # keep living through Wi-Fi blips and API errors
             log.warning("skipped a beat: %s", e)
-            next_think = time.time() + 30
-            time.sleep(5)
-        time.sleep(POLL_S)
+            with shared.lock:
+                shared.status = f"error: {e}"[:200]
+                shared.next_think = time.time() + 30
+            time.sleep(4)
+        shared.think_now.wait(POLL_S)
 
 
 if __name__ == "__main__":

@@ -20,6 +20,8 @@ class Config:
     longitude: float
     think_every_s: int
     share_active_app: bool
+    console_host: str
+    console_port: int
 
 
 def load() -> Config:
@@ -36,4 +38,6 @@ def load() -> Config:
         longitude=float(os.environ.get("LONGITUDE", "77.59")),
         think_every_s=int(os.environ.get("THINK_EVERY_S", "180")),
         share_active_app=os.environ.get("SHARE_ACTIVE_APP", "1") == "1",
+        console_host=os.environ.get("CONSOLE_HOST", "127.0.0.1"),
+        console_port=int(os.environ.get("CONSOLE_PORT", "8765")),
     )

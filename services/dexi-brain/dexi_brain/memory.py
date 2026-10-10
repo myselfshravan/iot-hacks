@@ -8,13 +8,13 @@ import json
 from pathlib import Path
 
 PATH = Path(__file__).resolve().parent.parent / "memory.json"
-MAX_NOTES, MAX_LINES, MAX_DAYS = 40, 30, 30
+MAX_NOTES, MAX_LINES, MAX_DAYS, MAX_LOG = 40, 30, 30, 300
 
 
 class Memory:
     def __init__(self, path: Path = PATH):
         self.path = path
-        self.data = {"notes": [], "lines": [], "days": {}}
+        self.data = {"notes": [], "lines": [], "days": {}, "log": []}
         if path.exists():
             self.data.update(json.loads(path.read_text()))
 
@@ -24,6 +24,7 @@ class Memory:
             del days[old]
         self.data["notes"] = self.data["notes"][-MAX_NOTES:]
         self.data["lines"] = self.data["lines"][-MAX_LINES:]
+        self.data["log"] = self.data["log"][-MAX_LOG:]
         self.path.write_text(json.dumps(self.data, indent=1))
 
     def _today(self) -> dict:
@@ -46,6 +47,24 @@ class Memory:
         text = text.strip()[:140]
         if text and text not in (n["text"] for n in self.data["notes"]):
             self.data["notes"].append({"date": dt.date.today().isoformat(), "text": text})
+
+    def log(self, trigger: str, context: dict, decision: dict) -> dict:
+        """Records one thought for the console's replayable log."""
+        log = self.data["log"]
+        entry = {"id": (log[-1]["id"] + 1) if log else 1,
+                 "time": dt.datetime.now().isoformat(timespec="seconds"),
+                 "trigger": trigger, "app": context.get("owner_is_using"),
+                 "mood": decision["mood"], "say": decision["say"],
+                 "remember": decision.get("remember", "")}
+        log.append(entry)
+        return entry
+
+    def find_log(self, entry_id: int) -> dict | None:
+        return next((e for e in self.data["log"] if e["id"] == entry_id), None)
+
+    def delete_note(self, index: int) -> None:
+        if 0 <= index < len(self.data["notes"]):
+            del self.data["notes"][index]
 
     def recent_lines(self, n: int = 8) -> list[str]:
         return self.data["lines"][-n:]

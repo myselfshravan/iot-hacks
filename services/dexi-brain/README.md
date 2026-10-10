@@ -12,10 +12,20 @@ cp .env.example .env      # then paste your API key into .env
 uv run dexi-brain
 ```
 
+**Console:** http://localhost:8765 is a terminal-style dashboard with:
+- live status and what Dexi sees;
+- a filterable thought log, where ▶ replays any past line on Dexi;
+- memory notes you can view, add or delete;
+- per-day stats;
+- mood and say controls, plus "think now".
+
+Set `CONSOLE_HOST=0.0.0.0` to open it from your phone.
+
 **Touch gestures:**
-- **Tap:** Dexi says something clever or funny.
-- **Double tap:** an info card (now playing with album art if Spotify or Music is playing, otherwise the time and weather).
-- **Long press:** a cuddle.
+- The firmware records each gesture in full: every press duration and every gap between presses.
+- It reacts instantly by the gesture's shape: a boop, quick taps, drumming (it gets annoyed), or a long hold (purrs).
+- The brain describes the gesture to the LLM, which responds in context.
+- Two quick taps also show an info card: now playing with album art if Spotify or Music is playing, otherwise the time and weather.
 
 **Memory:** `memory.json` (git-ignored) holds:
 - which days you were around, and when;
