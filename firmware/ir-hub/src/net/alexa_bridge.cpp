@@ -8,14 +8,21 @@ namespace {
 Espalexa espalexa;
 EspalexaDevice* device = nullptr;
 AcController* acRef = nullptr;
+wavess::State pendingState;
+bool pending = false;
 
+// Espalexa calls this mid-request, and Alexa polls the device state right
+// after. Sending IR here (up to ~1 s with echo retries) would starve that
+// poll and Alexa reports "device is malfunctioning", so only queue the
+// command; loop() sends it once the HTTP exchange is done.
 void onAlexa(EspalexaDevice* d) {
   if (!d || !acRef) return;
-  wavess::State next = acRef->state();
+  wavess::State next = pending ? pendingState : acRef->state();
   next.power = d->getValue() > 0;
   uint8_t pct = d->getPercent();
   if (next.power && pct >= wavess::kMinTemp && pct <= wavess::kMaxTemp) next.temp = pct;
-  acRef->command(next, "alexa");
+  pendingState = next;
+  pending = true;
 }
 
 }  // namespace
@@ -29,7 +36,13 @@ void begin(WebServer& server, AcController& ac, const char* name) {
   espalexa.begin(&server);  // also starts the web server
 }
 
-void loop() { espalexa.loop(); }
+void loop() {
+  espalexa.loop();
+  if (pending) {
+    pending = false;
+    acRef->command(pendingState, "alexa");
+  }
+}
 
 bool handle(const String& uri, const String& body) {
   return espalexa.handleAlexaApiCall(uri, body);
