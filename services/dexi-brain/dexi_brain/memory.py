@@ -5,10 +5,16 @@ said recently, and short notes the LLM chooses to remember."""
 
 import datetime as dt
 import json
+import re
 from pathlib import Path
 
 PATH = Path(__file__).resolve().parent.parent / "memory.json"
 MAX_NOTES, MAX_LINES, MAX_DAYS, MAX_LOG = 40, 30, 30, 300
+
+# Status snapshots that aren't worth remembering: clock times, counts of pets.
+STATUS = re.compile(
+    r"\b\d{1,2}:\d{2}\b|\b\d+\s*(pets?|pokes?|taps?|times)\b"
+    r"|\b(pets?|pokes?|taps?)\s+total\b|\b(today|tonight|right now|just now)\b", re.I)
 
 
 class Memory:
@@ -43,10 +49,13 @@ class Memory:
         if line:
             self.data["lines"].append(line)
 
-    def note(self, text: str) -> None:
+    def note(self, text: str) -> bool:
+        """Keeps durable facts only; rejects status snapshots (times, counts, today's app)."""
         text = text.strip()[:140]
-        if text and text not in (n["text"] for n in self.data["notes"]):
-            self.data["notes"].append({"date": dt.date.today().isoformat(), "text": text})
+        if not text or STATUS.search(text) or text in (n["text"] for n in self.data["notes"]):
+            return False
+        self.data["notes"].append({"date": dt.date.today().isoformat(), "text": text})
+        return True
 
     def log(self, trigger: str, context: dict, decision: dict) -> dict:
         """Records one thought for the console's replayable log."""
@@ -70,16 +79,23 @@ class Memory:
         return self.data["lines"][-n:]
 
     def summary(self) -> dict:
-        """What the LLM gets to see: today, the last week, and its notes."""
+        """What the LLM gets to see. Deliberately qualitative: exact counts and
+        timestamps here get recited back ("pet 27!") instead of used."""
         days = self.data["days"]
         today = dt.date.today()
+
+        def day_view(d: dict) -> dict:
+            pets = d.get("pets", 0)
+            affection = "none" if not pets else "a little" if pets < 5 else "a lot" if pets < 20 else "tons"
+            return {"petting": affection, "around_from": d.get("first_seen"), "until": d.get("last_seen")}
+
         week = []
         for i in range(1, 8):
-            d = (today - dt.timedelta(days=i)).isoformat()
-            if d in days:
-                week.append({"date": d, **days[d]})
+            d = (today - dt.timedelta(days=i))
+            if d.isoformat() in days:
+                week.append({"day": d.strftime("%A"), **day_view(days[d.isoformat()])})
         return {
-            "today": days.get(today.isoformat(), {}),
+            "today": day_view(days.get(today.isoformat(), {})),
             "previous_days": week,
-            "notes": [f"{n['date']}: {n['text']}" for n in self.data["notes"][-15:]],
+            "things_you_know_about_owner": [n["text"] for n in self.data["notes"][-15:]],
         }

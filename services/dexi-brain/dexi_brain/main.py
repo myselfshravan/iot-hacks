@@ -6,6 +6,7 @@ Dexi responds. A double-tap-like pair of quick presses also shows an info card.
 """
 
 import logging
+import random
 import time
 
 from . import cards, config, context, gestures
@@ -17,6 +18,7 @@ from .state import Shared
 
 POLL_S = 1
 CARD_SECS = 8
+IDLE_SPEAK_CHANCE = 0.35  # idle ticks with nothing new: usually just a mood/glance
 
 log = logging.getLogger("dexi-brain")
 
@@ -56,6 +58,7 @@ def main() -> None:
              cfg.dexi_url, dexi.base)
 
     last_gesture = None
+    last_app, was_away = None, False
     while True:
         try:
             st = dexi.state()
@@ -63,7 +66,7 @@ def main() -> None:
             event = None
             if last_gesture is not None and g.get("id", 0) > last_gesture:
                 memory.petted()
-                event = gestures.describe(g)
+                event = "touch: " + gestures.describe(g)
                 if is_double_tap(g):
                     show_card(dexi, cfg)
             last_gesture = g.get("id", 0)
@@ -74,15 +77,23 @@ def main() -> None:
             if event or forced or time.time() >= shared.next_think:
                 shared.think_now.clear()
                 ctx = context.gather(cfg.latitude, cfg.longitude, cfg.share_active_app)
+                # Things worth reacting to between ticks: an app switch, or coming back.
+                app, away = ctx.get("owner_is_using"), ctx.get("owner_away_for") != "at the laptop now"
+                if not event and was_away and not away:
+                    event = "your human just came back to the laptop"
+                elif not event and last_app and app and app != last_app:
+                    event = f"your human switched from {last_app} to {app}"
+                last_app, was_away = app or last_app, away
+                speak = bool(event) or forced or random.random() < IDLE_SPEAK_CHANCE
                 with shared.lock:
                     shared.status = "thinking"
                     if ctx.get("owner_away_for") == "at the laptop now":
                         memory.saw_owner()
                     summary, recent = memory.summary(), memory.recent_lines()
                 dexi.think(secs=8)  # pet packs show their "thinking" animation
-                decision = brain.think(ctx, summary, recent, event)
+                decision = brain.think(ctx, summary, recent, event, speak)
                 act(dexi, decision)
-                trigger = "touch: " + event if event else "console" if forced else "idle"
+                trigger = event or ("console" if forced else "idle")
                 with shared.lock:
                     memory.said(decision["say"])
                     if decision["remember"]:
@@ -92,7 +103,7 @@ def main() -> None:
                     shared.last_context = ctx
                     shared.next_think = time.time() + cfg.think_every_s
                     shared.status = "online"
-                log.info("%s -> %s %r%s", trigger, decision["mood"], decision["say"],
+                log.info("%s -> %s %r%s", trigger[:40], decision["mood"], decision["say"],
                          f" [remembered: {decision['remember']}]" if decision["remember"] else "")
         except Exception as e:  # keep living through Wi-Fi blips and API errors
             log.warning("skipped a beat: %s", e)

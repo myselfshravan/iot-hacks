@@ -23,10 +23,15 @@ Reply with ONLY a JSON object:
    status like counts, the time or what you are doing right now.}}
 
 Rules:
-- Stay quiet about half the time on idle ticks, unless something changed.
-- Always speak when there is an "event".
-- Never repeat or closely rephrase a recent line.
-- Late at night, be sleepy.
+- If "speak" is false, set "say" to "" (just pick a mood and a glance).
+- Always speak when there is an "event" (touch, app switch, owner returning).
+- Never repeat or closely rephrase a recent line, and vary the theme: look at
+  recent_lines and pick something different. Rotate between observations, a
+  curious question, a tiny fun fact, a joke, encouragement, a callback to
+  something you know about {owner}, or pure cat nonsense.
+- Never count or number things (pets, taps, minutes). Never quote raw data.
+- Mention the time or nag about sleep at most once an hour (check recent_lines).
+- Late at night you may be sleepy, but you can still be cute, curious or funny.
 - Plain ASCII only: the screen can't draw emoji."""
 
 
@@ -36,8 +41,9 @@ class Brain:
         self.model = model
         self.system = SYSTEM.format(owner=owner, moods=MOODS)
     def think(self, context: dict, memory: dict, recent_lines: list[str],
-              event: str | None = None) -> dict:
-        user = {"context": context, "memory": memory, "recent_lines": recent_lines}
+              event: str | None = None, speak: bool = True) -> dict:
+        user = {"context": context, "memory": memory, "recent_lines": recent_lines,
+                "speak": speak or bool(event)}
         if event:
             user["event"] = event
         resp = self.client.chat.completions.create(
@@ -46,7 +52,10 @@ class Brain:
                       {"role": "user", "content": json.dumps(user)}],
             max_tokens=1024,  # room for models that reason before answering
         )
-        return parse(resp.choices[0].message.content or "")
+        decision = parse(resp.choices[0].message.content or "")
+        if not (speak or event):
+            decision["say"] = ""
+        return decision
 
 
 def parse(text: str) -> dict:

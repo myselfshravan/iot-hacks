@@ -2,21 +2,23 @@
 
 
 def describe(g: dict) -> str:
-    """e.g. "3 quick taps (90, 110, 80 ms, ~150 ms apart)" or "held for 3.2 s"."""
+    """Plain words only (numbers here get parroted back by the LLM)."""
     presses, press_ms, gaps = g.get("presses", 0), g.get("press_ms", []), g.get("gap_ms", [])
     if not presses:
         return ""
     longest = max(press_ms) if press_ms else 0
     if presses == 1:
-        if longest >= 1500:
-            return f"you were held/stroked for {longest / 1000:.1f} s, a long cuddle"
+        if longest >= 3000:
+            return "a long, slow cuddle"
+        if longest >= 1200:
+            return "being gently held for a moment"
         if longest >= 400:
-            return f"you got one slow, deliberate press ({longest} ms)"
-        return f"you got a single quick boop ({longest} ms)"
+            return "one slow, deliberate press"
+        return "a single quick boop"
     avg_gap = sum(gaps) / len(gaps) if gaps else 0
-    pace = "frantic" if avg_gap < 150 else "quick" if avg_gap < 300 else "slow"
-    desc = (f"you were tapped {presses} times, {pace} (presses {', '.join(map(str, press_ms))} ms, "
-            f"~{avg_gap:.0f} ms apart)")
+    pace = "frantic drumming" if avg_gap < 150 else "quick taps" if avg_gap < 300 else "slow taps"
+    count = "a couple of" if presses == 2 else "a few" if presses <= 4 else "lots of"
+    desc = f"{count} {pace}"
     if longest >= 1200:
-        desc += f", ending in a {longest / 1000:.1f} s hold"
+        desc += ", ending in a hold"
     return desc
