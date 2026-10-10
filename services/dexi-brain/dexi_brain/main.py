@@ -25,7 +25,8 @@ def main() -> None:
     cfg = config.load()
     dexi = Dexi(cfg.dexi_url)
     brain = Brain(cfg.llm_base_url, cfg.llm_api_key, cfg.llm_model, cfg.owner)
-    log.info("brain up: %s via %s, Dexi at %s", cfg.llm_model, cfg.llm_base_url, cfg.dexi_url)
+    log.info("brain up: %s via %s, Dexi at %s (%s)", cfg.llm_model, cfg.llm_base_url,
+             cfg.dexi_url, dexi.base)
 
     pets = None
     next_think = 0.0

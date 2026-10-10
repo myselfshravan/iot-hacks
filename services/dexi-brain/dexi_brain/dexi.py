@@ -1,6 +1,8 @@
 """HTTP client for the Dexi firmware (firmware/dexi/src/net/web_api.h)."""
 
 import io
+import socket
+from urllib.parse import urlsplit, urlunsplit
 
 import requests
 
@@ -9,11 +11,16 @@ WIDTH, HEIGHT = 128, 160
 
 class Dexi:
     def __init__(self, base_url: str, timeout: float = 4.0):
-        self.base = base_url
+        self.url = base_url
         self.timeout = timeout
+        self.base = resolve(base_url)
 
     def _get(self, path: str, **params) -> dict:
-        r = requests.get(self.base + path, params=params, timeout=self.timeout)
+        try:
+            r = requests.get(self.base + path, params=params, timeout=self.timeout)
+        except requests.ConnectionError:
+            self.base = resolve(self.url)  # Dexi may have a new DHCP address
+            raise
         r.raise_for_status()
         return r.json()
 
@@ -45,3 +52,15 @@ class Dexi:
                           files={"img": ("frame.raw", raw.getvalue())}, timeout=10)
         r.raise_for_status()
         return r.json()
+
+
+def resolve(url: str) -> str:
+    """Swaps the hostname for its IPv4 address. macOS takes ~5 s per request to
+    resolve .local names (it tries IPv6 first), longer than our timeouts."""
+    parts = urlsplit(url)
+    try:
+        ip = socket.getaddrinfo(parts.hostname, None, socket.AF_INET)[0][4][0]
+    except OSError:
+        return url
+    netloc = ip + (f":{parts.port}" if parts.port else "")
+    return urlunsplit(parts._replace(netloc=netloc))

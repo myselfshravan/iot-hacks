@@ -35,8 +35,7 @@ class Brain:
             model=self.model,
             messages=[{"role": "system", "content": self.system},
                       {"role": "user", "content": json.dumps(user)}],
-            temperature=0.9,
-            max_tokens=120,
+            max_tokens=1024,  # room for models that reason before answering
         )
         decision = parse(resp.choices[0].message.content or "")
         if decision["say"]:
