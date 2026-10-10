@@ -12,8 +12,9 @@ constexpr uint16_t kFreqKhz = 38;
 // Nibbles that never changed in any capture (N5/N7 are overwritten below).
 constexpr uint8_t kConstNibbles[10] = {0, 0, 0, 1, 0, 0, 0, 1, 12, 0};
 
-// N5 values seen in captures/raw/wavess-04-timer-sleep.log.
-constexpr uint8_t kN5None = 0, kN5TimerOn = 1, kN5TimerOff = 2, kN5Sleep = 8;
+// N5 values seen in captures/raw/wavess-04-timer-sleep.log. N5 0/1/2 equal
+// kTimerNone / kTimerOffAfter / kTimerOnAfter.
+constexpr uint8_t kN5Sleep = 8;
 
 }  // namespace
 
@@ -30,7 +31,7 @@ uint64_t encode(const State& s) {
     n[5] = kN5Sleep;
     n[7] = 8;
   } else {
-    n[5] = s.timer ? kN5TimerOn : kN5None;
+    n[5] = s.timer;
     n[7] = constrain(s.timerHours, kMinTimerHours, kMaxTimerHours);
   }
   uint64_t bits = 0;
@@ -43,17 +44,16 @@ bool decode(uint64_t bits, State* out) {
   for (int i = 0; i < 10; i++) n[i] = (bits >> (4 * i)) & 0xF;
   if (n[3] != 1 || n[8] != 12) return false;
   if ((n[0] & 7) >= kModeCount || n[2] < 1 || n[2] > 15) return false;
-  if (n[5] != kN5None && n[5] != kN5TimerOn && n[5] != kN5TimerOff && n[5] != kN5Sleep)
-    return false;
+  if (n[5] >= kTimerCount && n[5] != kN5Sleep) return false;
   if (n[7] < kMinTimerHours || n[7] > kMaxTimerHours) return false;
 
   out->sleep = n[5] == kN5Sleep;
   if (!out->sleep) {
-    out->timer = n[5] == kN5TimerOn;
+    out->timer = n[5];
     out->timerHours = n[7];
   }
-  // Timer-off frames clear the power bit although the AC stays on; ignore it.
-  if (n[5] != kN5TimerOff) out->power = n[0] & 8;
+  // "Timer on" frames clear the power bit although the AC keeps running; ignore it.
+  if (n[5] != kTimerOnAfter) out->power = n[0] & 8;
   out->mode = n[0] & 7;
   out->temp = n[2] + 15;
   out->fan = n[4] & 3;

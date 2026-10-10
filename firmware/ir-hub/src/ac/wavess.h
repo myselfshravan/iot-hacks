@@ -10,7 +10,11 @@ namespace wavess {
 
 const char* const kModes[] = {"cool", "dry", "fan", "heat", "auto"};
 const char* const kFans[] = {"auto", "high", "medium", "low"};
-constexpr int kModeCount = 5, kFanCount = 4;
+// Timer button cycles none -> "timer off" (AC turns off after N h) ->
+// "timer on" (AC turns on after N h) -> none.
+const char* const kTimers[] = {"none", "off", "on"};
+constexpr int kModeCount = 5, kFanCount = 4, kTimerCount = 3;
+constexpr uint8_t kTimerNone = 0, kTimerOffAfter = 1, kTimerOnAfter = 2;
 constexpr uint8_t kModeCool = 0, kModeDry = 1;
 constexpr uint8_t kMinTemp = 16, kMaxTemp = 30;
 constexpr uint8_t kMinTimerHours = 1, kMaxTimerHours = 8;
@@ -21,8 +25,8 @@ struct State {
   uint8_t temp = 24;         // kMinTemp..kMaxTemp °C
   uint8_t fan = 0;           // index into kFans
   bool swing = true;
-  bool timer = false;      // the remote's Timer button (on/off)
-  uint8_t timerHours = 1;  // Time + / Time -: kMinTimerHours..kMaxTimerHours
+  uint8_t timer = kTimerNone;  // index into kTimers
+  uint8_t timerHours = 1;      // Time + / Time -: kMinTimerHours..kMaxTimerHours
   bool sleep = false;
 
   bool operator==(const State& o) const {

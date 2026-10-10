@@ -302,7 +302,11 @@ const char kAcHtml[] PROGMEM = R"WEB(<!doctype html>
         v: false,
         label: 'off'
       }], 'swing');
-      segment('timer', ON_OFF, 'timer');
+      segment('timer', [
+        { v: 'none', label: 'none' },
+        { v: 'off', label: 'off after' },
+        { v: 'on', label: 'on after' },
+      ], 'timer');
       segment('sleep', ON_OFF, 'sleep');
       $('hours').textContent = s.hours + ' h';
 

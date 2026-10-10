@@ -98,7 +98,7 @@ String AcController::json() const {
   j += ",\"temp\":" + String(state_.temp);
   j += ",\"fan\":\"" + String(kFans[state_.fan]) + "\"";
   j += ",\"swing\":" + String(state_.swing ? "true" : "false");
-  j += ",\"timer\":" + String(state_.timer ? "true" : "false");
+  j += ",\"timer\":\"" + String(kTimers[state_.timer]) + "\"";
   j += ",\"hours\":" + String(state_.timerHours);
   j += ",\"sleep\":" + String(state_.sleep ? "true" : "false");
   j += ",\"source\":\"" + String(source_) + "\"";
@@ -118,11 +118,13 @@ bool AcController::applyField(wavess::State& s, const String& key, const String&
   } else if (key == "swing") {
     s.swing = parseBool(value);
   } else if (key == "timer") {
-    s.timer = parseBool(value);
-    if (s.timer) s.sleep = false;
+    int i = indexOf(kTimers, kTimerCount, value);
+    if (i < 0) return false;
+    s.timer = i;
+    if (s.timer != kTimerNone) s.sleep = false;
   } else if (key == "sleep") {
     s.sleep = parseBool(value);
-    if (s.sleep) s.timer = false;
+    if (s.sleep) s.timer = kTimerNone;
   } else if (key == "hours") {
     int h = value.toInt();
     if (h < kMinTimerHours || h > kMaxTimerHours) return false;
