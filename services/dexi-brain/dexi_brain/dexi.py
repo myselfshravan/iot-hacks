@@ -1,0 +1,47 @@
+"""HTTP client for the Dexi firmware (firmware/dexi/src/net/web_api.h)."""
+
+import io
+
+import requests
+
+WIDTH, HEIGHT = 128, 160
+
+
+class Dexi:
+    def __init__(self, base_url: str, timeout: float = 4.0):
+        self.base = base_url
+        self.timeout = timeout
+
+    def _get(self, path: str, **params) -> dict:
+        r = requests.get(self.base + path, params=params, timeout=self.timeout)
+        r.raise_for_status()
+        return r.json()
+
+    def state(self) -> dict:
+        return self._get("/state")
+
+    def mood(self, mood: str, secs: int = 0) -> dict:
+        return self._get("/mood", m=mood, secs=secs)
+
+    def say(self, text: str, secs: int = 8) -> dict:
+        return self._get("/say", text=text, secs=secs)
+
+    def look(self, x: float, y: float, secs: int = 3) -> dict:
+        return self._get("/look", x=f"{x:.2f}", y=f"{y:.2f}", secs=secs)
+
+    def show_image(self, image, secs: int = 10) -> dict:
+        """Pushes a PIL image (any size; letterboxed to 128x160) to the screen."""
+        from PIL import Image
+
+        canvas = Image.new("RGB", (WIDTH, HEIGHT))
+        img = image.convert("RGB")
+        img.thumbnail((WIDTH, HEIGHT))
+        canvas.paste(img, ((WIDTH - img.width) // 2, (HEIGHT - img.height) // 2))
+        raw = io.BytesIO()
+        for r, g, b in canvas.getdata():
+            v = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
+            raw.write(v.to_bytes(2, "little"))
+        r = requests.post(self.base + "/frame", params={"secs": secs},
+                          files={"img": ("frame.raw", raw.getvalue())}, timeout=10)
+        r.raise_for_status()
+        return r.json()

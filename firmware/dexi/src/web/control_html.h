@@ -1,0 +1,221 @@
+// GENERATED from control.html by tools/embed_web.py. Do not edit.
+#pragma once
+
+#include <pgmspace.h>
+
+const char kControlHtml[] PROGMEM = R"WEB(<!doctype html>
+<!--
+  Dexi control page, served at "/".
+  Edit this file, then `make build` regenerates control_html.h (tools/embed_web.py).
+  Talks to the API in src/net/web_api.cpp.
+-->
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0e1116">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Dexi</title>
+  <style>
+    :root {
+      --bg: #0e1116;
+      --card: #171c24;
+      --key: #242b36;
+      --fg: #eef1f6;
+      --dim: #8a93a3;
+      --acc: #ff6eb4;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 15px/1.3 system-ui, -apple-system, sans-serif;
+      padding: max(14px, env(safe-area-inset-top)) 14px 14px;
+      display: flex;
+      justify-content: center;
+    }
+
+    main {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    #status {
+      color: var(--dim);
+      font-size: 13px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .label {
+      color: var(--dim);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 8px;
+    }
+
+    button,
+    input {
+      font: inherit;
+      color: inherit;
+      border: 0;
+      border-radius: 12px;
+      background: var(--key);
+      min-height: 44px;
+    }
+
+    button {
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: scale(.96);
+    }
+
+    button.sel {
+      background: var(--acc);
+      color: #2a0016;
+    }
+
+    .moods {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .say {
+      display: flex;
+      gap: 6px;
+    }
+
+    .say input {
+      flex: 1;
+      padding: 0 12px;
+      min-width: 0;
+    }
+
+    .say button {
+      padding: 0 16px;
+      background: var(--acc);
+      color: #2a0016;
+    }
+
+    #pad {
+      height: 120px;
+      border-radius: 12px;
+      background: var(--key);
+      position: relative;
+      touch-action: none;
+    }
+
+    #pad span {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: var(--dim);
+      font-size: 13px;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header>
+      <h1>Dexi</h1><span id="status">connecting…</span>
+    </header>
+    <section class="card">
+      <div class="label">Mood</div>
+      <div class="moods" id="moods"></div>
+    </section>
+    <section class="card">
+      <div class="label">Say</div>
+      <form class="say" id="sayForm">
+        <input id="text" maxlength="76" placeholder="Something for Dexi to say" autocomplete="off">
+        <button>Say</button>
+      </form>
+    </section>
+    <section class="card">
+      <div class="label">Look</div>
+      <div id="pad"><span>tap or drag to move Dexi's eyes</span></div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const MOODS = ['neutral', 'happy', 'excited', 'love', 'sleepy', 'sad',
+      'angry', 'surprised', 'hot', 'cold', 'curious'];
+    let state = {};
+
+    async function call(path) {
+      const res = await fetch(path).catch(() => null);
+      if (res && res.ok) render(await res.json());
+      else $('status').textContent = 'offline';
+    }
+
+    function render(s) {
+      state = s;
+      $('status').textContent = s.mood + (s.say ? ' · "' + s.say + '"' : '') + ' · pets ' + (s.taps + s.long_presses);
+      $('moods').replaceChildren(...MOODS.map((m) => {
+        const b = document.createElement('button');
+        b.textContent = m;
+        b.className = m === s.base ? 'sel' : '';
+        b.onclick = () => call('/mood?m=' + m);
+        return b;
+      }));
+    }
+
+    $('sayForm').onsubmit = (e) => {
+      e.preventDefault();
+      const text = $('text').value.trim();
+      if (text) call('/say?text=' + encodeURIComponent(text) + '&secs=10');
+      $('text').value = '';
+    };
+
+    let lastLook = 0;
+    function look(e) {
+      const r = $('pad').getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * 2 - 1;
+      const y = ((e.clientY - r.top) / r.height) * 2 - 1;
+      if (Date.now() - lastLook < 120) return;  // don't flood the ESP32
+      lastLook = Date.now();
+      fetch(`/look?x=${x.toFixed(2)}&y=${y.toFixed(2)}&secs=4`).catch(() => {});
+    }
+    $('pad').onpointerdown = (e) => { $('pad').setPointerCapture(e.pointerId); look(e); };
+    $('pad').onpointermove = (e) => { if (e.buttons) look(e); };
+
+    call('/state');
+    setInterval(() => call('/state'), 3000);
+  </script>
+</body>
+
+</html>
+)WEB";

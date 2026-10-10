@@ -58,6 +58,7 @@ def parse(args: list[str]) -> tuple[list[str], list[str], str | None]:
 def sketch_command(sketch: pathlib.Path, build: pathlib.Path) -> list[str]:
     subprocess.run(
         ["arduino-cli", "compile", "-b", FQBN, "--only-compilation-database",
+         "--libraries", str(ROOT / "libraries"),
          "--build-path", str(build), str(sketch)],
         check=True, capture_output=True,
     )

@@ -6,7 +6,7 @@
 // receiver heard each one (resending if not), follows the physical remote, and
 // uses a DHT in the outlet air to confirm the AC really reacted.
 //
-// Code map (src/):
+// Code map (src/; Wi-Fi comes from the shared libraries/WifiLink):
 //   config.h               pins and tunables
 //   ac/wavess.*            WAVESS protocol (captures/wavess-protocol.md)
 //   ac/ac_controller.*     AC state, send + echo/retry, remote tracking, persistence
@@ -14,7 +14,6 @@
 //   projector/projector.*  projector NEC codes
 //   sensors/climate.*      DHT readings + reaction confirmation
 //   ui/status_led.h        blue LED: solid online, slow blink offline, flicker sending
-//   net/wifi_link.*        non-blocking Wi-Fi with backoff
 //   net/web_api.*          HTTP routes
 //   net/alexa_bridge.*     Alexa (Hue emulation)
 //   web/*.html             phone UI + projector page (embedded as *_html.h by tools/embed_web.py)
@@ -32,7 +31,7 @@
 #include "src/ir/ir_port.h"
 #include "src/net/alexa_bridge.h"
 #include "src/net/web_api.h"
-#include "src/net/wifi_link.h"
+#include <WifiLink.h>
 #include "src/sensors/climate.h"
 #include "src/serial_console.h"
 #include "src/ui/status_led.h"

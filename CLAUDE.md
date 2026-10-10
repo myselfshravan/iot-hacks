@@ -10,7 +10,9 @@ for the current status.
 | `firmware/<product>/` | Production sketches, one folder per device. Each is self-contained. |
 | `firmware/ir-hub/` | ESP32 #1: **IR hub**, which replicates IR remotes. Main app: **Kelvin**, the AC remote (`src/ac/`, `src/web/ac.html`). Side app: projector (`src/projector/`, `src/web/projector.html`). Code map at the top of `ir-hub.ino` |
 | `firmware/ambient-lights/` | ESP32 #2: WS2812B monitor sync (WLED + HyperHDR); plan only |
-| `firmware/dexi/` | ESP32 #3: Dexi, the AI desk pet on a 1.8" TFT; plan only |
+| `firmware/dexi/` | ESP32 #2: **Dexi**, the AI desk pet on a 1.8" TFT (face engine, touch, HTTP API) |
+| `services/dexi-brain/` | Python (uv) brain for Dexi on the Mac: any OpenAI-compatible LLM; config in git-ignored `.env` |
+| `libraries/` | Arduino libraries shared by all firmware (`WifiLink`); the Makefile passes `--libraries libraries` |
 | `experiments/` | Lab notebook: numbered one-off sketches. Don't edit; copy ideas into `firmware/`. |
 | `captures/` | Decoded protocols (`*.md`) + verbatim serial logs (`raw/`, never edit) |
 | `docs/` | `hardware.md` (boards, pins, parts), `wiring.md`, `to-buy.md`, `journal.md` (history) |
@@ -34,4 +36,5 @@ for the current status.
 - If an upload fails with `termios.error 22`, ask the user to replug the USB cable.
 - Known facts go in docs and captures. Label anything unverified as a hypothesis.
 - Temp files go in the session scratchpad, never in the repo.
-- Stop before `git push`.
+- Push after every commit (the user wants local and remote kept in sync).
+- API keys go in git-ignored `.env` files. Never print or commit them.

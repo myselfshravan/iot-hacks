@@ -1,3 +1,6 @@
 secrets.h
 .DS_Store
 .vscode/c_cpp_properties.json
+.env
+.venv/
+__pycache__/

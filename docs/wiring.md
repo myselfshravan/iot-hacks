@@ -97,3 +97,13 @@ The SD-card pins on the module (SD_CS, MISO, ...) stay unconnected.
 - A full frame takes 21 ms (about 47 fps).
 - 3V3 on VCC works.
 - LovyanGFX's ST7735/ST7735S panels garbled the colours on this module, so use the Adafruit driver.
+
+## Dexi touch pad (TTP223)
+
+There are no free 3V3/GND holes beside ESP32 #2, so two GPIOs power the pad (it draws microamps).
+
+| TTP223 pin | Hole | ESP32 |
+|---|---|---|
+| VCC | a11 | D21 (driven HIGH) |
+| I/O (SIG) | a10 | D19 (input; HIGH while touched) |
+| GND | a14 | D22 (driven LOW) |

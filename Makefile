@@ -2,13 +2,14 @@
 FQBN ?= esp32:esp32:esp32
 PORT ?= /dev/cu.usbserial-0001
 APP  ?= ir-hub
+LIBS := --libraries libraries
 DIR  := $(if $(wildcard firmware/$(APP)),firmware/$(APP),$(APP))
 
 .PHONY: build flash monitor log check intellisense
 
 build:
 	python3 tools/embed_web.py
-	arduino-cli compile -b $(FQBN) $(DIR)
+	arduino-cli compile -b $(FQBN) $(LIBS) $(DIR)
 
 flash: build
 	arduino-cli upload -b $(FQBN) -p $(PORT) $(DIR)
@@ -25,7 +26,7 @@ check:
 	@python3 tools/embed_web.py
 	@for d in firmware/*/ experiments/*/; do \
 	  ls $$d*.ino >/dev/null 2>&1 || continue; \
-	  echo "== $$d"; arduino-cli compile -b $(FQBN) $$d >/dev/null || exit 1; \
+	  echo "== $$d"; arduino-cli compile -b $(FQBN) $(LIBS) $$d >/dev/null || exit 1; \
 	done; echo "all sketches build"
 
 intellisense:

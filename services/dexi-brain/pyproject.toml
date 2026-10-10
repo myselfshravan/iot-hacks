@@ -1,0 +1,18 @@
+[project]
+name = "dexi-brain"
+version = "0.1.0"
+description = "Laptop-side brain for Dexi the desk pet: decides moods and lines with any OpenAI-compatible LLM"
+requires-python = ">=3.11"
+dependencies = [
+    "openai>=1.40",
+    "requests>=2.31",
+    "pillow>=10",
+    "python-dotenv>=1.0",
+]
+
+[project.scripts]
+dexi-brain = "dexi_brain.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

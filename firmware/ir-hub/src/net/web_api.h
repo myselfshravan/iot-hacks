@@ -14,7 +14,7 @@
 #include "../ir/ir_port.h"
 #include "../sensors/climate.h"
 #include "../ui/status_led.h"
-#include "wifi_link.h"
+#include <WifiLink.h>
 
 namespace web_api {
 
