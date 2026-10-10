@@ -12,6 +12,19 @@ cp .env.example .env      # then paste your API key into .env
 uv run dexi-brain
 ```
 
+**Touch gestures:**
+- **Tap:** Dexi says something clever or funny.
+- **Double tap:** an info card (now playing with album art if Spotify or Music is playing, otherwise the time and weather).
+- **Long press:** a cuddle.
+
+**Memory:** `memory.json` (git-ignored) holds:
+- which days you were around, and when;
+- how often Dexi was petted;
+- recent lines, so it doesn't repeat itself;
+- notes the LLM chooses to remember.
+
+The LLM sees the last week of this, so it can make callbacks.
+
 **Laptop compute:** `Dexi.show_image(pil_image, secs)` renders anything on the Mac and pushes it full-screen. That covers weather art, album covers, charts and generated pixel art. The face comes back after `secs` seconds.
 
 **Privacy:** with `SHARE_ACTIVE_APP=1`, the name of the frontmost app (not its contents) is sent to the LLM provider. Set it to 0 to turn this off.

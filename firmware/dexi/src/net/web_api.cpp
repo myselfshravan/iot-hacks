@@ -30,10 +30,11 @@ String jsonEscape(const String& s) {
 
 String stateJson() {
   String j = "{";
-  j += "\"mood\":\"" + String(mood::name(deps->face.mood())) + "\"";
-  j += ",\"base\":\"" + String(mood::name(deps->face.baseMood())) + "\"";
-  j += ",\"say\":\"" + jsonEscape(deps->face.saying()) + "\"";
+  j += "\"mood\":\"" + String(mood::name(deps->pet.mood())) + "\"";
+  j += ",\"base\":\"" + String(mood::name(deps->pet.baseMood())) + "\"";
+  j += ",\"say\":\"" + jsonEscape(deps->pet.saying()) + "\"";
   j += ",\"taps\":" + String(deps->touch.taps());
+  j += ",\"double_taps\":" + String(deps->touch.doubleTaps());
   j += ",\"long_presses\":" + String(deps->touch.longPresses());
   j += ",\"uptime_s\":" + String(millis() / 1000);
   j += ",\"rssi\":" + String(WiFi.RSSI());
@@ -49,17 +50,17 @@ void handleMood() {
     srv->send(400, "text/plain", "unknown mood");
     return;
   }
-  deps->face.setMood(m, secsArg(0));
+  deps->pet.setMood(m, secsArg(0));
   sendState();
 }
 
 void handleSay() {
-  deps->face.say(srv->arg("text"), secsArg(8));
+  deps->pet.say(srv->arg("text"), secsArg(8));
   sendState();
 }
 
 void handleLook() {
-  deps->face.lookAt(srv->arg("x").toFloat(), srv->arg("y").toFloat(), secsArg(3));
+  deps->pet.lookAt(srv->arg("x").toFloat(), srv->arg("y").toFloat(), secsArg(3));
   sendState();
 }
 
@@ -92,6 +93,10 @@ void begin(WebServer& server, const Deps& d) {
   server.on("/mood", HTTP_GET, handleMood);
   server.on("/say", HTTP_GET, handleSay);
   server.on("/look", HTTP_GET, handleLook);
+  server.on("/hop", HTTP_GET, [] {
+    deps->pet.hop();
+    sendState();
+  });
   server.on("/frame", HTTP_POST, handleFrameDone, handleFrameUpload);
   server.onNotFound([] { srv->send(404, "text/plain", "Not found"); });
   server.begin();

@@ -19,7 +19,7 @@ def time_of_day() -> str:
     return now.strftime("%A %d %B, %H:%M")
 
 
-def weather(lat: float, lon: float) -> str | None:
+def weather_data(lat: float, lon: float) -> dict | None:
     try:
         r = requests.get(
             "https://api.open-meteo.com/v1/forecast",
@@ -28,10 +28,15 @@ def weather(lat: float, lon: float) -> str | None:
             timeout=5,
         )
         c = r.json()["current"]
-        sky = WEATHER_CODES.get(c["weather_code"], "unknown sky")
-        return f"{c['temperature_2m']:.0f}°C, {c['relative_humidity_2m']}% humidity, {sky}"
+        return {"temp": c["temperature_2m"], "humidity": c["relative_humidity_2m"],
+                "sky": WEATHER_CODES.get(c["weather_code"], "unknown sky")}
     except Exception:
         return None
+
+
+def weather(lat: float, lon: float) -> str | None:
+    w = weather_data(lat, lon)
+    return f"{w['temp']:.0f}°C, {w['humidity']}% humidity, {w['sky']}" if w else None
 
 
 def mac_idle_seconds() -> int | None:

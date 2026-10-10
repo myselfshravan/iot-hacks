@@ -1,8 +1,8 @@
 // Dexi: an AI desk pet on a 1.8" TFT (ESP32 #2).
 //
-// The ESP32 keeps Dexi alive on its own: it blinks, glances, breathes, morphs
-// between moods and reacts to being petted (TTP223 touch pad), with or without
-// Wi-Fi. The brain (services/dexi-brain on the laptop) decides moods and lines
+// Dexi is a pixel-art cat living in a little world whose sky follows the real
+// time of day. The ESP32 keeps it alive on its own: it wanders, hops, blinks,
+// sleeps and reacts to being petted (TTP223 touch pad), with or without Wi-Fi. The brain (services/dexi-brain on the laptop) decides moods and lines
 // via an LLM and drives this board over HTTP; it can also push full-screen
 // images rendered on the laptop.
 //
@@ -11,9 +11,11 @@
 // Code map (src/; Wi-Fi comes from the shared libraries/WifiLink):
 //   config.h            pins and tunables
 //   display/screen.*    TFT + off-screen canvas (flicker-free)
-//   face/mood.*         moods and the geometry/colour of each
-//   face/face.*         animated face: morphing, blinks, glances, extras, speech bubble
-//   input/touch.*       TTP223 taps and long presses
+//   pet/mood.*          moods: eyes, mouth, colour, behaviour of each
+//   pet/sprites.h       the pixel-art cat (16x16 at 4x)
+//   pet/pet.*           behaviour + animation: wander, hop, sleep, effects, bubble
+//   pet/world.*         sky by real time of day (NTP), sun/moon, stars, grass, clock
+//   input/touch.*       TTP223 tap / double tap / long press
 //   net/web_api.*       HTTP API + pushed images
 //   web/control.html    phone control page (embedded by tools/embed_web.py)
 //
@@ -28,7 +30,8 @@
 #include "secrets.h"
 #include "src/config.h"
 #include "src/display/screen.h"
-#include "src/face/face.h"
+#include "src/pet/pet.h"
+#include "src/pet/world.h"
 #include "src/input/touch.h"
 #include "src/net/web_api.h"
 
@@ -39,7 +42,7 @@ const WifiLink::Network kNetworks[] = {{WIFI_SSID, WIFI_PASSWORD}};
 #endif
 
 Screen screen(config::kTftCs, config::kTftDc, config::kTftRst, config::kTftBacklight);
-Face face;
+Pet pet;
 Touch touch(config::kTouchPin, config::kTouchPowerPin, config::kTouchGroundPin,
             config::kLongPressMs);
 WifiLink wifi;
@@ -48,22 +51,37 @@ bool servicesUp = false;
 
 void startServices() {
   if (MDNS.begin(config::kHostname)) MDNS.addService("http", "tcp", 80);
-  web_api::begin(server, {face, touch, wifi});
+  web_api::begin(server, {pet, touch, wifi});
   servicesUp = true;
   Serial.printf("READY  http://%s.local  or  http://%s\n", config::kHostname,
                 WiFi.localIP().toString().c_str());
-  face.setMood(Mood::kHappy, 2500);
-  face.say("I'm online!", 3000);
+  world::startClock(config::kTimezone);
+  pet.setMood(Mood::kHappy, 2500);
+  pet.hop();
+  pet.say("I'm online!", 3000);
 }
 
+// Instant local reactions; the brain also sees the counters in /state and
+// follows up (tap: a thought, double tap: an info card, long press: a cuddle).
 void onTouch(Touch::Event e) {
-  if (e == Touch::Event::kTap) {
-    face.setMood(Mood::kLove, 3000);
-    Serial.println("touch: tap");
-  } else if (e == Touch::Event::kLongPress) {
-    face.setMood(Mood::kHappy, 5000);
-    face.say("purrrr...", 3000);
-    Serial.println("touch: long press");
+  switch (e) {
+    case Touch::Event::kTap:
+      pet.hop();
+      pet.setMood(Mood::kHappy, 2500);
+      Serial.println("touch: tap");
+      break;
+    case Touch::Event::kDoubleTap:
+      pet.hop();
+      pet.setMood(Mood::kSurprised, 1500);
+      Serial.println("touch: double tap");
+      break;
+    case Touch::Event::kLongPress:
+      pet.setMood(Mood::kLove, 5000);
+      pet.say("purrrr...", 3000);
+      Serial.println("touch: long press");
+      break;
+    default:
+      break;
   }
 }
 
@@ -80,7 +98,7 @@ void setup() {
   randomSeed(esp_random());
   screen.begin(config::kTftRotation, config::kTftSpiHz);
   touch.begin();
-  face.setMood(Mood::kSleepy, 2000);  // waking up
+  pet.setMood(Mood::kSleepy, 2000);  // waking up
   wifi.begin(config::kHostname, kNetworks, sizeof(kNetworks) / sizeof(kNetworks[0]));
   wifi.onFirstConnect(startServices);
   startWatchdog();
@@ -97,11 +115,11 @@ void loop() {
   if (now - lastFrame < config::kFrameMs) return;
   lastFrame = now;
 
-  face.update(now);
+  pet.update(now);
   if (const uint16_t* img = web_api::activeImage(now)) {
     screen.present(img);
   } else {
-    face.draw(screen.canvas(), now);
+    pet.draw(screen.canvas(), now);
     screen.present();
   }
 }

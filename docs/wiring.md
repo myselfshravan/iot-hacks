@@ -100,10 +100,14 @@ The SD-card pins on the module (SD_CS, MISO, ...) stay unconnected.
 
 ## Dexi touch pad (TTP223)
 
-There are no free 3V3/GND holes beside ESP32 #2, so two GPIOs power the pad (it draws microamps).
+There are no free 3V3 or GND holes beside ESP32 #2, so two GPIOs power the pad; it draws microamps.
+Plug each lead into the column-a hole beside the **labelled** pin. This board's rows don't match
+the generic 30-pin order: D18 is on row 10.
 
-| TTP223 pin | Hole | ESP32 |
-|---|---|---|
-| VCC | a11 | D21 (driven HIGH) |
-| I/O (SIG) | a10 | D19 (input; HIGH while touched) |
-| GND | a14 | D22 (driven LOW) |
+| TTP223 pin | ESP32 pin label |
+|---|---|
+| VCC | D21 (driven HIGH) |
+| I/O (SIG) | D19 (input; HIGH while touched) |
+| GND | D22 (driven LOW) |
+
+Verified 2026-10-11: taps register.

@@ -1,0 +1,273 @@
+#include "pet.h"
+
+#include "sprites.h"
+#include "world.h"
+
+namespace {
+
+constexpr int kScale = 4;                         // screen px per art pixel
+constexpr int kArtPx = sprites::kSize * kScale;   // 64
+constexpr int kMinX = kArtPx / 2 + 2, kMaxX = 128 - kArtPx / 2 - 2;
+constexpr uint32_t kHopMs = 450, kBlinkMs = 120;
+
+constexpr uint16_t kOutline = 0x3165, kBelly = 0xFF59, kPink = 0xFC96, kWhite = 0xFFFF;
+constexpr uint16_t kTear = 0x5DFF, kHeart = 0xF8B2, kSteam = 0xC618;
+
+uint16_t cellColour(char code, uint16_t tint) {
+  switch (code) {
+    case 'o': return kOutline;
+    case 'b': return tint;
+    case 'l': return kBelly;
+    case 'p': return kPink;
+    case 'w': return kWhite;
+    default: return 0;
+  }
+}
+
+void heart(GFXcanvas16& c, int x, int y, uint16_t colour) {
+  c.fillRect(x, y, 2, 2, colour);
+  c.fillRect(x + 3, y, 2, 2, colour);
+  c.fillRect(x, y + 1, 5, 2, colour);
+  c.fillRect(x + 1, y + 3, 3, 1, colour);
+  c.drawPixel(x + 2, y + 4, colour);
+}
+
+}  // namespace
+
+void Pet::setMood(Mood m, uint32_t holdMs) {
+  mood_ = m;
+  if (holdMs) moodUntil_ = millis() + holdMs;
+  else {
+    base_ = m;
+    moodUntil_ = 0;
+  }
+  nextDecision_ = 0;  // react to the new mood right away
+}
+
+void Pet::say(const String& text, uint32_t ms) {
+  sayText_ = text;
+  sayUntil_ = millis() + ms;
+}
+
+void Pet::lookAt(float x, float y, uint32_t ms) {
+  lookX_ = constrain(x, -1.0f, 1.0f);
+  lookY_ = constrain(y, -1.0f, 1.0f);
+  holdLookUntil_ = millis() + ms;
+}
+
+void Pet::hop() {
+  if (millis() - hopStart_ > kHopMs) hopStart_ = millis();
+}
+
+// Picks the next thing to do on its own, depending on the mood's behaviour.
+void Pet::decide(uint32_t now) {
+  Behaviour b = mood::style(mood_).behaviour;
+  walking_ = false;
+  if (b == Behaviour::kWander || b == Behaviour::kBouncy) {
+    int roll = random(100);
+    if (roll < 55) {
+      targetX_ = random(kMinX, kMaxX + 1);
+      walking_ = fabsf(targetX_ - x_) > 6;
+    }
+    if (b == Behaviour::kBouncy || (mood_ == Mood::kHappy && roll > 85)) hop();
+  }
+  nextDecision_ = now + (b == Behaviour::kBouncy ? random(600, 1500) : random(2000, 6000));
+}
+
+void Pet::update(uint32_t now) {
+  float dt = lastUpdate_ ? (now - lastUpdate_) / 1000.0f : 0;
+  lastUpdate_ = now;
+  if (moodUntil_ && (int32_t)(now - moodUntil_) >= 0) {
+    mood_ = base_;
+    moodUntil_ = 0;
+  }
+  if (sayUntil_ && (int32_t)(now - sayUntil_) >= 0) {
+    sayText_ = "";
+    sayUntil_ = 0;
+  }
+  if ((int32_t)(now - nextDecision_) >= 0) decide(now);
+
+  if (walking_) {
+    float speed = mood_ == Mood::kSad ? 8 : 20;  // px per second
+    float step = speed * dt;
+    facing_ = targetX_ > x_ ? 1 : -1;
+    if (fabsf(targetX_ - x_) <= step) {
+      x_ = targetX_;
+      walking_ = false;
+    } else {
+      x_ += facing_ * step;
+    }
+  }
+
+  // Idle glances when nobody is steering the eyes.
+  if ((int32_t)(now - holdLookUntil_) >= 0 && (int32_t)(now - nextGlance_) >= 0) {
+    bool centre = random(100) < 45;
+    lookX_ = centre ? 0 : random(-1, 2);
+    lookY_ = centre ? 0 : random(-1, 1);
+    nextGlance_ = now + random(1200, 4000);
+  }
+  if ((int32_t)(now - nextBlink_) >= 0) {
+    blinkStart_ = now;
+    nextBlink_ = now + (random(100) < 15 ? 260 : random(2500, 6000));
+  }
+}
+
+void Pet::draw(GFXcanvas16& c, uint32_t now) {
+  bool talking = sayText_.length() > 0;
+  world::draw(c, now, !talking);
+
+  const MoodStyle& st = mood::style(mood_);
+  int x = x_;
+  if (st.behaviour == Behaviour::kShiver) x += random(-1, 2);
+  if (st.behaviour == Behaviour::kStomp) x += ((now / 90) % 2) ? 1 : -1;
+
+  uint32_t sinceHop = now - hopStart_;
+  int hopY = sinceHop < kHopMs ? sinf(PI * sinceHop / kHopMs) * 16 : 0;
+  int breath = ((now / 900) % 2) && !walking_ ? 1 : 0;
+
+  int x0 = x - kArtPx / 2, y0 = world::kGroundY - kArtPx - hopY + breath;
+  drawCat(c, x0, y0, now);
+
+  bool asleep = st.behaviour == Behaviour::kSleep;
+  int headY = asleep ? y0 + sprites::kLoafTop * kScale : y0;
+  drawEffects(c, x, headY, now);
+  if (talking) drawBubble(c, x);
+}
+
+void Pet::drawCat(GFXcanvas16& c, int x0, int y0, uint32_t now) {
+  const MoodStyle& st = mood::style(mood_);
+  bool asleep = st.behaviour == Behaviour::kSleep;
+  auto cell = [&](int col, int row, char code) {
+    if (code != '.') c.fillRect(x0 + col * kScale, y0 + row * kScale, kScale, kScale, cellColour(code, st.tint));
+  };
+
+  // Tail behind the body, on the side away from where the cat faces; it wags.
+  if (!asleep) {
+    int side = facing_ > 0 ? -1 : sprites::kSize;
+    int out = facing_ > 0 ? -1 : 1;
+    bool fastWag = mood_ == Mood::kHappy || mood_ == Mood::kExcited || mood_ == Mood::kLove;
+    int wag = (now / (fastWag ? 150 : 450)) % 2;
+    cell(side, 11, 'o');
+    cell(side, 10, 'b');
+    cell(side + out * wag, 9, 'b');
+    cell(side + out * wag, 8, 'o');
+  }
+
+  // Body.
+  if (asleep) {
+    for (int r = 0; r < 10; r++)
+      for (int col = 0; col < sprites::kSize; col++) cell(col, sprites::kLoafTop + r, sprites::kLoaf[r][col]);
+  } else {
+    for (int r = 0; r < 14; r++)
+      for (int col = 0; col < sprites::kSize; col++) cell(col, r, sprites::kBody[r][col]);
+    int legs = walking_ ? 1 + (now / 180) % 2 : 0;
+    for (int r = 0; r < 2; r++)
+      for (int col = 0; col < sprites::kSize; col++) cell(col, 14 + r, sprites::kLegs[legs][r][col]);
+  }
+
+  // Face: eyes follow the gaze (or the walking direction), blink, and mirror.
+  Eyes eyes = st.eyes;
+  bool canBlink = eyes == Eyes::kOpen || eyes == Eyes::kBig || eyes == Eyes::kAngry;
+  if (canBlink && now - blinkStart_ < kBlinkMs) eyes = Eyes::kClosed;
+  int gx = walking_ ? facing_ : (int)roundf(lookX_);
+  int gy = asleep ? 0 : (int)roundf(lookY_);
+  int faceRow = asleep ? sprites::kLoafTop + 3 : 0;
+  const char* const* e = sprites::kEyes[(int)eyes];
+  for (int r = 0; r < 3; r++)
+    for (int k = 0; k < 3; k++) {
+      cell(sprites::kEyeCol + gx + k, faceRow + sprites::kEyeRow + gy + r, e[r][k]);
+      cell(sprites::kRightEyeCol + gx + (2 - k), faceRow + sprites::kEyeRow + gy + r, e[r][k]);
+    }
+  if (!asleep) {
+    const char* const* m = sprites::kMouths[(int)st.mouth];
+    for (int r = 0; r < 2; r++)
+      for (int k = 0; k < 4; k++) cell(sprites::kMouthCol + gx + k, sprites::kMouthRow + r, m[r][k]);
+    if (st.cheeks) {
+      cell(2, 9, 'p');
+      cell(13, 9, 'p');
+    }
+  }
+}
+
+void Pet::drawEffects(GFXcanvas16& c, int headX, int headY, uint32_t now) {
+  const MoodStyle& st = mood::style(mood_);
+  float secs = now / 1000.0f;
+  switch (mood_) {
+    case Mood::kLove:
+      for (int i = 0; i < 3; i++) {
+        float p = fmodf(secs * 0.6f + i / 3.0f, 1.0f);
+        heart(c, headX - 26 + i * 22 + sinf(secs * 3 + i) * 3, headY - 4 - p * 30, kHeart);
+      }
+      break;
+    case Mood::kSleepy:
+      for (int i = 0; i < 3; i++) {
+        float p = fmodf(secs * 0.35f + i / 3.0f, 1.0f);
+        c.setTextSize(1 + (i == 1));
+        c.setTextColor(0xFFFF);
+        c.setCursor(headX + 18 + p * 12, headY + 4 - p * 34);
+        c.print('z');
+      }
+      break;
+    case Mood::kHot: {
+      float p = fmodf(secs * 0.8f, 1.0f);
+      c.fillCircle(headX + 30, headY + 14 + p * 12, 2, kTear);
+      c.fillTriangle(headX + 28, headY + 13 + p * 12, headX + 32, headY + 13 + p * 12, headX + 30,
+                     headY + 9 + p * 12, kTear);
+      break;
+    }
+    case Mood::kSad: {
+      float p = fmodf(secs * 0.5f, 1.0f);
+      c.fillRect(headX - 16, headY + 32 + p * 14, 3, 4, kTear);
+      break;
+    }
+    case Mood::kCold:
+      if ((now / 120) % 2) {
+        c.drawFastVLine(headX - 36, headY + 24, 8, kTear);
+        c.drawFastVLine(headX + 35, headY + 24, 8, kTear);
+      }
+      break;
+    case Mood::kAngry:
+      for (int i = 0; i < 2; i++) {
+        float p = fmodf(secs * 0.9f + i * 0.5f, 1.0f);
+        c.fillCircle(headX + (i ? 18 : -18), headY - 2 - p * 14, 3 - p * 2, kSteam);
+      }
+      break;
+    default:
+      break;
+  }
+  if (st.mark) {
+    int bob = ((now / 300) % 2) * 2;
+    c.setTextSize(2);
+    c.setTextColor(0x0000);
+    c.setCursor(headX + 23, headY - 15 - bob);
+    c.print(st.mark);
+    c.setTextColor(0xFFE0);
+    c.setCursor(headX + 22, headY - 16 - bob);
+    c.print(st.mark);
+    c.setTextSize(1);
+  }
+}
+
+void Pet::drawBubble(GFXcanvas16& c, int headX) {
+  constexpr int kCharsPerLine = 19, kMaxLines = 5, kLineH = 10;
+  String lines[kMaxLines];
+  int n = 0;
+  String rest = sayText_;
+  while (rest.length() && n < kMaxLines) {
+    int cut = rest.length() <= kCharsPerLine ? rest.length() : rest.lastIndexOf(' ', kCharsPerLine);
+    if (cut <= 0) cut = min<int>(kCharsPerLine, rest.length());
+    lines[n++] = rest.substring(0, cut);
+    rest = rest.substring(cut);
+    rest.trim();
+  }
+  int h = n * kLineH + 8, y = 3;
+  int tailX = constrain(headX, 14, c.width() - 14);
+  c.fillRoundRect(2, y, c.width() - 4, h, 6, kWhite);
+  c.fillTriangle(tailX - 5, y + h - 1, tailX + 5, y + h - 1, tailX, y + h + 6, kWhite);
+  c.setTextSize(1);
+  c.setTextColor(0x0000);
+  for (int i = 0; i < n; i++) {
+    c.setCursor(7, y + 5 + i * kLineH);
+    c.print(lines[i]);
+  }
+}

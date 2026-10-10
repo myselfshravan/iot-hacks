@@ -8,16 +8,24 @@ from openai import OpenAI
 MOODS = ["neutral", "happy", "excited", "love", "sleepy", "sad",
          "angry", "surprised", "hot", "cold", "curious"]
 
-SYSTEM = """You are the inner voice of Dexi, a tiny desk pet living on a 1.8-inch screen \
-on {owner}'s desk. Dexi is playful, warm, a little cheeky and very observant. It reacts \
-to the time of day, the weather, whether {owner} is around, and what they're doing.
+SYSTEM = """You are the inner voice of Dexi, a tiny pixel-art ginger cat living on a \
+1.8-inch screen on {owner}'s desk. Dexi is playful, warm, a little cheeky, sharp and \
+very observant. It notices the time, the weather, whether {owner} is around, what \
+they're doing, and it REMEMBERS: use the memory (previous days, notes) to make \
+callbacks, notice patterns and streaks, and show it knows {owner}.
 
 Reply with ONLY a JSON object:
-{{"mood": one of {moods}, "say": a line of at most 70 characters or "" to stay quiet, \
-"look": [x, y] with x and y between -1 and 1 for where Dexi glances}}
+{{"mood": one of {moods},
+ "say": a line of at most 70 characters, or "" to stay quiet,
+ "look": [x, y] with x and y between -1 and 1 for where Dexi glances,
+ "remember": a short fact worth keeping for future days, or ""}}
 
-Rules: stay quiet about half the time unless something changed or you were petted. \
-Never repeat a recent line. Late at night be sleepy. No emoji (the screen can't draw them)."""
+Rules:
+- Stay quiet about half the time on idle ticks, unless something changed.
+- Always speak when there is an "event".
+- Never repeat or closely rephrase a recent line.
+- Late at night, be sleepy.
+- Plain ASCII only: the screen can't draw emoji."""
 
 
 class Brain:
@@ -25,10 +33,9 @@ class Brain:
         self.client = OpenAI(base_url=base_url, api_key=api_key)
         self.model = model
         self.system = SYSTEM.format(owner=owner, moods=MOODS)
-        self.recent: list[str] = []
-
-    def think(self, context: dict, event: str | None = None) -> dict:
-        user = {"context": context, "recent_lines": self.recent[-6:]}
+    def think(self, context: dict, memory: dict, recent_lines: list[str],
+              event: str | None = None) -> dict:
+        user = {"context": context, "memory": memory, "recent_lines": recent_lines}
         if event:
             user["event"] = event
         resp = self.client.chat.completions.create(
@@ -37,10 +44,7 @@ class Brain:
                       {"role": "user", "content": json.dumps(user)}],
             max_tokens=1024,  # room for models that reason before answering
         )
-        decision = parse(resp.choices[0].message.content or "")
-        if decision["say"]:
-            self.recent.append(decision["say"])
-        return decision
+        return parse(resp.choices[0].message.content or "")
 
 
 def parse(text: str) -> dict:
@@ -51,4 +55,5 @@ def parse(text: str) -> dict:
     say = str(data.get("say") or "")[:76].encode("ascii", "ignore").decode()
     look = data.get("look") if isinstance(data.get("look"), list) else [0, 0]
     x, y = (max(-1.0, min(1.0, float(v))) for v in (look + [0, 0])[:2])
-    return {"mood": mood, "say": say, "look": (x, y)}
+    remember = str(data.get("remember") or "").strip()
+    return {"mood": mood, "say": say, "look": (x, y), "remember": remember}

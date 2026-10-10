@@ -6,6 +6,7 @@
 namespace config {
 
 constexpr char kHostname[] = "dexi";  // http://dexi.local
+constexpr char kTimezone[] = "IST-5:30";  // POSIX TZ for the sky and clock
 
 // 1.8" ST7735R TFT (hardware SPI: SCK 18, MOSI 23)
 constexpr uint8_t kTftCs = 5;
