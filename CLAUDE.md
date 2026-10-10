@@ -10,7 +10,7 @@ for the current status.
 | `firmware/<product>/` | Production sketches, one folder per device. Each is self-contained. |
 | `firmware/ir-hub/` | ESP32 #1: **IR hub**, which replicates IR remotes. Main app: **Kelvin**, the AC remote (`src/ac/`, `src/web/ac.html`). Side app: projector (`src/projector/`, `src/web/projector.html`). Code map at the top of `ir-hub.ino` |
 | `firmware/ambient-lights/` | ESP32 #2: WS2812B monitor sync (WLED + HyperHDR); plan only |
-| `firmware/lexi/` | ESP32 #3: Lexi, the AI desk pet on a 1.8" TFT; plan only |
+| `firmware/dexi/` | ESP32 #3: Dexi, the AI desk pet on a 1.8" TFT; plan only |
 | `experiments/` | Lab notebook: numbered one-off sketches. Don't edit; copy ideas into `firmware/`. |
 | `captures/` | Decoded protocols (`*.md`) + verbatim serial logs (`raw/`, never edit) |
 | `docs/` | `hardware.md` (boards, pins, parts), `wiring.md`, `to-buy.md`, `journal.md` (history) |
@@ -21,7 +21,7 @@ for the current status.
 - `make monitor` and `make log NAME=x SECONDS=60` (log saved to `captures/raw/x.log`).
 - `make check` compiles every sketch. Run it before committing.
 - `make intellisense` after adding a sketch or library.
-- Toolchain: arduino-cli, `esp32:esp32:esp32` core 3.3.12. Libraries: IRremoteESP8266 2.9.0, Espalexa 2.7.0, Adafruit DHT sensor library 1.4.7.
+- Toolchain: arduino-cli, `esp32:esp32:esp32` core 3.3.12. Libraries: IRremoteESP8266 2.9.0, Espalexa 2.7.0, Adafruit DHT sensor library 1.4.7, LovyanGFX 1.2.32.
 - Port: `/dev/cu.usbserial-0001`.
 
 ## Code style

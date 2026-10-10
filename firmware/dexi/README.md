@@ -1,4 +1,4 @@
-# Lexi: AI desk pet (ESP32 #3), plan
+# Dexi: AI desk pet (ESP32 #3), plan
 
 A character on the 1.8" TFT that reacts to the room and talks to an AI service.
 

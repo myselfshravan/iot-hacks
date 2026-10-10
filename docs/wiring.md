@@ -68,3 +68,21 @@ Verified 2026-10-10: DHT22 reads ~28.7 °C / 39 % RH.
 
 For "AC reacted" confirmation, put the sensor in the FCU's outlet airflow, using a
 long female-female lead. On the desk it only reports room readings.
+
+# Dexi (ESP32 #2): 1.8" ST7735 TFT
+
+Female-female jumpers straight from the TFT header to the ESP32's **left** header
+(no breadboard needed). Module pin names vary; match by meaning.
+
+| TFT pin | Also labelled | ESP32 |
+|---|---|---|
+| VCC | | 3V3 |
+| GND | | GND |
+| SCK | SCL, CLK | D18 |
+| SDA | MOSI, DIN | D23 |
+| CS | | D5 |
+| A0 | DC, RS | D16 (RX2) |
+| RESET | RST | D17 (TX2) |
+| LED | BL, BLK | D4 (backlight, PWM dimmable) |
+
+The SD-card pins on the module (SD_CS, MISO, ...) stay unconnected.

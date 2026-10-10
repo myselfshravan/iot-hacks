@@ -25,7 +25,7 @@ One ESP32 can drive every IR device in a room. The same LED sends NEC to the pro
 ## Names
 - **IR hub**: ESP32 #1, the generic IR remote replicator (`irhub.local`).
 - **Kelvin**: the AC remote app on the IR hub (page `/`, Alexa "Room AC"). The projector page is `/projector`.
-- **Lexi**: the AI desk pet (ESP32 #3). Alternative name Dexy.
+- **Dexi**: the AI desk pet (ESP32 #2 for now; the lights get the next board).
 - Ambient lights (ESP32 #2): no name yet.
 
 ## Parts on hand

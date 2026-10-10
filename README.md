@@ -6,7 +6,7 @@ ESP32 home hacks, built from zero electronics experience.
 |---|---|---|
 | **IR hub** (`firmware/ir-hub`) | Replicates IR remotes over Wi-Fi. Its main app, **Kelvin**, is a Wi-Fi + Alexa remote for a WAVESS-controlled Daikin FCU. The IR protocol was reverse-engineered from scratch, so Kelvin synthesises any AC state, checks every send, and follows the physical remote. | Working |
 | **Ambient lights** (`firmware/ambient-lights`) | WS2812B strip behind the monitor, synced to the screen | Planned |
-| **Lexi** (`firmware/lexi`) | AI desk pet on a 1.8" TFT | Planned |
+| **Dexi** (`firmware/dexi`) | AI desk pet on a 1.8" TFT | Planned |
 
 - Protocol write-ups are in `captures/`.
 - Wiring and hardware notes are in `docs/`.
