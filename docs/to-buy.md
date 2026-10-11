@@ -1,3 +1,44 @@
+# To buy
+
+## Dexi add-ons (researched 2026-10-11)
+
+Prices are in ₹, checked 2026-10-11. **Best** is the cheaper in-stock option.
+
+### Top 3: start here
+| Part | What Dexi gains | Robocraze | FlyRobo | Best |
+|---|---|---|---|---|
+| I2S amp **MAX98357A** | A voice: chirps and spoken AI lines | [₹190](https://robocraze.com/products/smartelex-max98357a-i2s-audio-breakout-amplifier-for-raspberry-pi-and-microcontrollers) | [₹323](https://www.flyrobo.in/max98357-i2s-3w-class-d-audio-amplifier-module) | RC |
+| Speaker **4 Ω 3 W, 40 mm** (pairs with the amp) | Loud, clear sound | only 0.5 W: [₹53](https://robocraze.com/products/8-ohm-0-25w-speaker) | [₹224](https://www.flyrobo.in/4r-3w-40mm-mini-power-amplifier-speaker) | FR |
+| mmWave presence **LD2410B** | Knows you're at the desk even when still | not stocked (C4001 [₹1,575](https://robocraze.com/products/mmwave-c4001-24ghz-human-presence-detection-sensor) is overkill) | [₹548](https://www.flyrobo.in/ld2410b-human-presence-radar-module) | FR |
+| Coin **vibration motor** (driven by a 2N2222 you have) | Purrs in your hand | [₹25](https://robocraze.com/products/coin-type-micro-vibration-motor) | [₹26](https://www.flyrobo.in/round-micro-vibration-motor) | either |
+
+### Nice to have
+| Part | What Dexi gains | Robocraze | FlyRobo | Best |
+|---|---|---|---|---|
+| **INMP441** I2S mic (needs soldering) | Hears claps, music and voice | [₹135](https://robocraze.com/products/inmp441-mems-high-precision-omnidirectional-microphone-module-i2s) | [₹438](https://www.flyrobo.in/inmp441-mems-high-precision-omnidirectional-microphone-module-i2s-interface-supports-esp32) | RC |
+| **MPU6050** accel/gyro | Knows when it's picked up, shaken or tilted | [₹151](https://robocraze.com/products/mpu-6050-triple-axis-accelerometer-gyroscope-module) | [₹218](https://www.flyrobo.in/mpu_6050_6dof_3_axis_gyro_with_accelerometer_sensor_module) | RC |
+| **BH1750** light sensor | Dims at night, reacts to lights off | [₹100](https://robocraze.com/products/gy-302-bh1750-light-intensity-module) | [₹112](https://www.flyrobo.in/gy-30-bh1750-digital-light-intensity-sensor-module) | RC |
+| **DHT22** temperature/humidity | Its own room temperature (Kelvin's is in another city) | [₹104](https://robocraze.com/products/dht22-humidity-and-temperature-sensor-module-am2302) | [₹105](https://www.flyrobo.in/dht22-digital-temperature-and-humidity-sensor-module) | either |
+| **WS2812 12-LED ring** | Glow that matches its mood | 8-LED: [₹41](https://robocraze.com/products/ws2812-8-bit-rgb-led-round) | 12-LED: [₹74](https://www.flyrobo.in/12bit-ws2812-5050-rgb-led-built-full-color-driving-lights-circular-development-board) | FR |
+| **1.28" round GC9A01** 240×240 | Round EMO-style face, sharper | [₹449, out of stock](https://robocraze.com/products/1-28-inch-round-tft-display-module-240x240-hd-ips-full-color-screen) | not found | wait for RC |
+| **SG90** micro servo | A wagging tail or tilting head | [₹105](https://robocraze.com/products/sg90-micro-servo-motor) | [₹123](https://www.flyrobo.in/sg90-9g-micro-pro-servo) | RC |
+| **TP4056** charger (Type-C) + battery | Cordless | [₹19](https://robocraze.com/products/tp4056-battery-charger-c-type-module-with-protection-1) + 3.7 V 1000 mAh [₹185](https://robocraze.com/products/3-7v-1000mah-li-ion-battery) | [₹19](https://www.flyrobo.in/tp4056-1a-li-ion-lithium-battery-charging-module-with-current-protection-type-c) + 500 mAh [₹276](https://www.flyrobo.in/3.7v-500mah-lipo-rechargeable-battery-lithium-polymer) | RC |
+
+### Also needed
+| Part | Why | Robocraze | FlyRobo |
+|---|---|---|---|
+| **ESP32 30-pin (CP2102)** | ESP32 #3 for the ambient lights (Dexi took #2) | [₹420](https://robocraze.com/products/nodemcu-32-wifi-bluetooth-esp32-development-board30-pin) | [₹438](https://www.flyrobo.in/esp32-node-mcu-wifi-bluetooth-development-module-30-pin) |
+
+**Already on hand:**
+- The IR proximity sensor (FC-51-like), which gives wave and hover reactions.
+- A spare 2N2222A transistor, to drive the vibration motor.
+
+**Pins:** to use more than about 2 of these, seat Dexi's ESP32 across two breadboards pushed side by side, so both rows of pins are reachable (see `wiring.md`).
+
+---
+
+## Earlier wishlist notes (pasted, 2026-10)
+
 Haha, now you have crossed the dangerous line. Once the ESP32 successfully reproduced the WAVESS IR packet, you are basically holding a tiny Wi-Fi computer with a stupid number of possible peripherals.
 
 Your **ESP32-WROOM-32** is surprisingly capable for this. It has Wi-Fi, Bluetooth/BLE, I2S, SPI, I2C, PWM, capacitive touch, ADC/DAC, CAN-compatible TWAI, pulse counters and a dedicated infrared peripheral. It also has up to 32 GPIOs, although some pins have boot/strapping constraints. [Espressif Documentation](https://documentation.espressif.com/esp32-wroom-32_datasheet_en.html?utm_source=chatgpt.com)
