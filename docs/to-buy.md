@@ -33,6 +33,11 @@ Prices are in ₹, checked 2026-10-11. **Best** is the cheaper in-stock option.
 - The IR proximity sensor (FC-51-like), which gives wave and hover reactions.
 - A spare 2N2222A transistor, to drive the vibration motor.
 
+**Which store:**
+- **Top 4 only:** buy everything from FlyRobo, about ₹1,121 in one order. Robocraze doesn't stock the LD2410 or a 3 W speaker.
+- **Top 4 plus nice-to-haves:** split the order. FlyRobo for the radar, speaker and LED ring; Robocraze for the rest, which is about ₹550 cheaper. The INMP441 alone is ₹135 vs ₹438.
+- **Shipping:** not checked. Compare final cart totals.
+
 **Pins:** to use more than about 2 of these, seat Dexi's ESP32 across two breadboards pushed side by side, so both rows of pins are reachable (see `wiring.md`).
 
 ---

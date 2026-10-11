@@ -35,6 +35,13 @@ Brain: `services/dexi-brain`. Its console at localhost:8765 has a replayable tho
   - the AC state persists across reboots;
   - a `/health` endpoint.
 
+## Waiting on
+- The **Dexi add-ons order**: see `docs/to-buy.md` (top 3: MAX98357A + speaker, LD2410B, vibration motor). When the parts arrive:
+  1. Seat ESP32 #2 across two breadboards so the right-side pins are free.
+  2. Wire the parts.
+  3. Add a firmware module for each, and have the brain describe each new sensor's events to the LLM, the same way it does for touch.
+- The **IR proximity sensor** (FC-51-like) is already on hand, for wave and hover reactions. Needs its pin labels first.
+
 ## Next steps
 1. Put the board near the AC on a USB charger (battery would last only 2-3 days). Run the sensor lead into the outlet air so "AC reacted ✓" works.
 2. Optional: remote access over HTTPS via a Cloudflare Tunnel. This needs an always-on Pi or similar device in the same house.
