@@ -5,7 +5,7 @@ APP  ?= ir-hub
 LIBS := --libraries libraries
 DIR  := $(if $(wildcard firmware/$(APP)),firmware/$(APP),$(APP))
 
-.PHONY: build flash ota monitor log check intellisense
+.PHONY: build flash ota monitor log check intellisense lights-watchdog
 
 build:
 	python3 tools/embed_web.py
@@ -37,3 +37,11 @@ check:
 
 intellisense:
 	python3 tools/vscode_intellisense.py
+
+# Login service that restarts HyperHDR when screen sync to Dexi goes stale.
+LIGHTS_PLIST := $(HOME)/Library/LaunchAgents/com.iothacks.lights-watchdog.plist
+lights-watchdog:
+	sed "s|REPO|$(CURDIR)|" tools/com.iothacks.lights-watchdog.plist > $(LIGHTS_PLIST)
+	launchctl unload $(LIGHTS_PLIST) 2>/dev/null || true
+	launchctl load $(LIGHTS_PLIST)
+	@echo "running; log: tail -f /tmp/lights-watchdog.log"

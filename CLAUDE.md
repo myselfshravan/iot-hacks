@@ -16,7 +16,7 @@ for the current status.
 | `experiments/` | Lab notebook: numbered one-off sketches. Don't edit; copy ideas into `firmware/`. |
 | `captures/` | Decoded protocols (`*.md`) + verbatim serial logs (`raw/`, never edit) |
 | `docs/` | `hardware.md` (boards, pins, parts), `wiring.md`, `to-buy.md`, `journal.md` (history) |
-| `tools/` | `serial_log.py` (log/send over serial), `embed_web.py` (HTML → header), `vscode_intellisense.py` |
+| `tools/` | `serial_log.py` (log/send over serial), `embed_web.py` (HTML → header), `vscode_intellisense.py`, `lights_watchdog.py` (restarts HyperHDR when sync goes stale; `make lights-watchdog` installs it at login) |
 
 ## Commands
 - `make flash APP=ir-hub` builds and flashes (`APP=experiments/06_ir_tx` also works).
