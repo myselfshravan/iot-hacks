@@ -16,11 +16,12 @@ for the current status.
 | `experiments/` | Lab notebook: numbered one-off sketches. Don't edit; copy ideas into `firmware/`. |
 | `captures/` | Decoded protocols (`*.md`) + verbatim serial logs (`raw/`, never edit) |
 | `docs/` | `hardware.md` (boards, pins, parts), `wiring.md`, `to-buy.md`, `journal.md` (history) |
-| `tools/` | `serial_log.py` (log/send over serial), `embed_web.py` (HTML → header), `vscode_intellisense.py`, `lights_watchdog.py` (restarts HyperHDR when sync goes stale; `make lights-watchdog` installs it at login) |
+| `tools/` | `serial_log.py` (log/send over serial), `embed_web.py` (HTML → header), `vscode_intellisense.py` |
 
 ## Commands
 - `make flash APP=ir-hub` builds and flashes (`APP=experiments/06_ir_tx` also works).
 - `make monitor` and `make log NAME=x SECONDS=60` (log saved to `captures/raw/x.log`).
+- `make lights` restarts HyperHDR screen sync on demand.
 - `make check` compiles every sketch. Run it before committing.
 - `make intellisense` after adding a sketch or library.
 - Toolchain: arduino-cli, `esp32:esp32:esp32` core 3.3.12. Libraries: IRremoteESP8266 2.9.0, Espalexa 2.7.0, Adafruit DHT sensor library 1.4.7, Adafruit ST7735 and ST7789 + Adafruit GFX, Adafruit NeoPixel 1.15.5 (LovyanGFX installed but garbles this TFT).

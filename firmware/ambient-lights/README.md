@@ -24,4 +24,4 @@ History of the original plan: `../../docs/journal.md` §20.
 - **Fix:** one block `writePixels`. The loop gap is now about 30 ms, and the strip starts changing about 75 ms after a colour change.
 - Smoothing adds the fade on top of that.
 - `/light` reports `loop_gap_ms` (worst loop stall over the last 2 s) and `queued` (most packets drained at once) to catch regressions.
-- **Watchdog:** `tools/lights_watchdog.py`, run at login by `make lights-watchdog`. It relaunches HyperHDR if it isn't running, and restarts it when Dexi's packet count stops rising for 20 s (backing off up to 10 min). Log: `/tmp/lights-watchdog.log`.
+- **Sync stuck?** Run `make lights`. It restarts HyperHDR and prints Dexi's `/light`; `syncing: true` with a rising `packets` count means it's back.
