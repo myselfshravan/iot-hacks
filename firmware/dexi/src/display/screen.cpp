@@ -19,7 +19,11 @@ void Screen::begin(uint8_t rotation, uint32_t spiHz) {
 void Screen::present() { present(canvas_.getBuffer()); }
 
 void Screen::present(const uint16_t* pixels) {
-  tft_.drawRGBBitmap(0, 0, pixels, kWidth, kHeight);
+  // One address window + one block write: drawRGBBitmap goes row by row.
+  tft_.startWrite();
+  tft_.setAddrWindow(0, 0, kWidth, kHeight);
+  tft_.writePixels(const_cast<uint16_t*>(pixels), kWidth * kHeight, true, false);
+  tft_.endWrite();
 }
 
 void Screen::setBacklight(bool on) { digitalWrite(backlight_, on); }

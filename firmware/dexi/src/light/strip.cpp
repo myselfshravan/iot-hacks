@@ -58,7 +58,9 @@ void Strip::save() {
 bool Strip::receive(uint32_t now) {
   if (!listening_) return false;
   bool got = false;
+  uint32_t drained = 0;
   while (int len = udp_.parsePacket()) {
+    drained++;
     uint16_t n = min<int>(len / 3, px_.numPixels() - skip_);
     uint32_t sum[3] = {0, 0, 0};
     for (uint16_t i = 0; i < n; i++) {
@@ -73,11 +75,20 @@ bool Strip::receive(uint32_t now) {
     got = true;
   }
   if (got) lastPacket_ = now;
+  queuedMax_ = max(queuedMax_, drained);
   return got;
 }
 
 void Strip::update(uint32_t now) {
   Mood mood = mood_;
+  if (lastUpdate_) gapMax_ = max(gapMax_, now - lastUpdate_);
+  lastUpdate_ = now;
+  if (now - gapSince_ > 2000) {
+    gapReport_ = gapMax_;
+    queuedReport_ = queuedMax_;
+    gapMax_ = queuedMax_ = 0;
+    gapSince_ = now;
+  }
   if (mode_ == Mode::kOff) {
     syncing_ = false;
     if (listening_) while (udp_.parsePacket()) udp_.flush();  // drop the stream

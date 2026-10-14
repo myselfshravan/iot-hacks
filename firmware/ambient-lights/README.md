@@ -14,7 +14,13 @@ History of the original plan: `../../docs/journal.md` §20.
 - Device `udpraw` → `dexi.local`:5568. Use the hostname, because the IP changes after Wi-Fi drops.
 - Capture: `systemInstanceEnable` on, USB capture off, system capture device `Display id: 2` (the LG; `reorder_displays` does not pick the screen). Restart HyperHDR if the monitor was off when it started.
 - 102 LEDs written as an explicit list: right bottom→top, top right→left, left top→bottom, bottom left→right. Capture depth: 5% on the sides, 10% top and bottom.
-- Settings (known good, the first version that synced): 20 fps capture, smoothing 150 ms at 50 Hz, gamma 1.5, black-bar detection off. Screen sync runs at full brightness under the 1.9 A cap.
+- Settings: 20 fps capture, smoothing 80 ms at 50 Hz, gamma 1.5, black-bar detection off. Screen sync runs at full brightness under the 1.9 A cap.
 - Tried and reverted 2026-10-14: 60 fps capture, 40 ms smoothing, gamma 1.0 with boosted saturation, and a core-0 strip task. Together they made sync seconds late or stuck, and the culprit was not isolated. Change one setting at a time.
 - macOS system capture on, display `auto`.
 - Opening the Classic layout editor and saving regenerates the list from its own fields, so re-check the direction after doing that.
+
+**Latency, measured 2026-10-14** (a colour pushed through HyperHDR, then Dexi's `/light` average polled):
+- **Root cause of the lag:** `Screen::present` used `drawRGBBitmap`, which took **287 ms** a frame. The strip only runs between frames, so colours arrived 0.5–1.3 s late and about two thirds of packets were dropped.
+- **Fix:** one block `writePixels`. The loop gap is now about 30 ms, and the strip starts changing about 75 ms after a colour change.
+- Smoothing adds the fade on top of that.
+- `/light` reports `loop_gap_ms` (worst loop stall over the last 2 s) and `queued` (most packets drained at once) to catch regressions.

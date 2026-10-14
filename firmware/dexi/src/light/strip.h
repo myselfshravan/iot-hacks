@@ -33,6 +33,8 @@ class Strip {
   uint8_t brightness() const { return brightness_; }
   bool syncing() const { return syncing_; }
   uint32_t packets() const { return packets_; }
+  uint32_t loopGapMs() const { return gapReport_; }  // worst gap between update() calls, last 2 s
+  uint32_t queued() const { return queuedReport_; } // most packets drained at once, last 2 s
   uint32_t lastAverage() const { return avg_; }  // 0xRRGGBB of the last synced frame
 
   static const char* modeName(Mode m);
@@ -51,6 +53,8 @@ class Strip {
   volatile bool syncing_ = false;
   volatile uint32_t packets_ = 0;
   volatile uint32_t avg_ = 0;
+  uint32_t lastUpdate_ = 0, gapMax_ = 0, gapReport_ = 0, gapSince_ = 0;
+  uint32_t queuedMax_ = 0, queuedReport_ = 0;
   volatile Mood mood_ = Mood::kNeutral;
   uint32_t lastPacket_ = 0;
   uint32_t lastFrame_ = 0;
