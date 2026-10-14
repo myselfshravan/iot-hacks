@@ -38,7 +38,7 @@ check:
 intellisense:
 	python3 tools/vscode_intellisense.py
 
-# Monitor LED strip: `make lights` (status), `make lights DO=off`, DO="sync off",
+# Monitor LED strip: `make lights` (status), DO=screen, DO=off, DO=candle,
 # DO="chase ff0000", DO=restart (HyperHDR stuck). See tools/lights.sh.
 lights:
 	@DEXI=$(or $(HOST),dexi.local) tools/lights.sh $(DO)

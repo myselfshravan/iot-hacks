@@ -9,7 +9,7 @@ not a separate WLED board. Wiring: `docs/wiring.md` (Dexi LED strip).
   - solid, chase (a comet running round the monitor), sparkle: all in the chosen colour;
   - candle: warm flicker;
   - off: total off, the stream is ignored too.
-- **Sync switch:** `sync off` keeps HyperHDR running but Dexi ignores it and shows the mode. `sync on` resumes.
+- **Screen vs effects:** choosing an effect turns screen sync off (HyperHDR keeps running, Dexi ignores it). `screen` turns it back on, with mood as the fallback.
 - **Screen sync:** HyperHDR on the Mac → LED device type **udpraw**, host `dexi.local`, port 5568. It overrides the mode while streaming and hands back 2 s after it stops.
 - **LED layout:** 103 on the strip. LED 0 sits outside the monitor and is kept dark (`kLedSkip`). The visible 102 run from the bottom-right, anticlockwise: right 19, top 32, left 19, bottom 32. HyperHDR sends 102. In HyperHDR: input position bottom-right, direction anticlockwise (counter-clockwise).
 - **Why not WLED:** WLED would replace Dexi's firmware. Keeping our own lets the strip react to Dexi.

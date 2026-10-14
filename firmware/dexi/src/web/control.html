@@ -122,10 +122,84 @@
       color: #2a0016;
     }
 
-    #bri {
-      width: 100%;
-      margin-top: 10px;
+    .lights {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .lights button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 2px;
+      font-size: 13px;
+    }
+
+    .lights button i {
+      font-style: normal;
+      font-size: 20px;
+    }
+
+    .hint {
+      color: var(--dim);
+      font-size: 13px;
+      margin: 10px 2px 0;
+      min-height: 1.2em;
+    }
+
+    .ctl {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--dim);
+    }
+
+    .ctl span {
+      width: 76px;
+      flex: none;
+    }
+
+    .ctl input[type=range] {
+      flex: 1;
       accent-color: var(--acc);
+    }
+
+    .ctl b {
+      width: 40px;
+      text-align: right;
+      color: var(--fg);
+      font-weight: 500;
+    }
+
+    .swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .swatches button,
+    #color {
+      width: 28px;
+      height: 28px;
+      min-height: 0;
+      padding: 0;
+      border-radius: 50%;
+      border: 2px solid transparent;
+    }
+
+    .swatches button.sel {
+      border-color: var(--fg);
+    }
+
+    #color {
+      background: none;
+      border: 2px dashed var(--dim);
+      flex: none;
     }
 
     #pad {
@@ -154,6 +228,21 @@
       <h1>Dexi</h1><span id="status">connecting…</span>
     </header>
     <section class="card">
+      <div class="label">Monitor lights</div>
+      <div class="lights" id="light"></div>
+      <div class="hint" id="lightHint"></div>
+      <div class="ctl" id="colorRow">
+        <span>Colour</span>
+        <div class="swatches" id="swatches"></div>
+        <input id="color" type="color" aria-label="Custom colour">
+      </div>
+      <div class="ctl" id="briRow">
+        <span>Brightness</span>
+        <input id="bri" type="range" min="10" max="255" aria-label="Brightness">
+        <b id="briPct"></b>
+      </div>
+    </section>
+    <section class="card">
       <div class="label">Mood</div>
       <div class="moods" id="moods"></div>
     </section>
@@ -165,15 +254,6 @@
       </form>
     </section>
     <section class="card">
-      <div class="label">Lights <span id="sync"></span></div>
-      <div class="moods" id="light"></div>
-      <div class="say" style="margin-top:10px">
-        <button id="sync">Screen sync</button>
-        <input id="color" type="color" aria-label="Effect colour" style="flex:0 0 56px;padding:0">
-      </div>
-      <input id="bri" type="range" min="0" max="255" aria-label="Brightness">
-    </section>
-    <section class="card">
       <div class="label">Look</div>
       <div id="pad"><span>tap or drag to move Dexi's eyes</span></div>
     </section>
@@ -183,7 +263,27 @@
     const $ = (id) => document.getElementById(id);
     const MOODS = ['neutral', 'happy', 'excited', 'love', 'sleepy', 'sad',
       'angry', 'surprised', 'hot', 'cold', 'curious'];
-    const LIGHT_MODES = ['mood', 'rainbow', 'solid', 'chase', 'sparkle', 'candle', 'off'];
+    // One choice for the strip. "screen" = follow the monitor (HyperHDR); an effect
+    // turns screen sync off so it shows straight away; off = everything dark.
+    const LIGHTS = [
+      { v: 'screen', icon: '🖥', label: 'Screen' }, { v: 'mood', icon: '💗', label: 'Mood' },
+      { v: 'rainbow', icon: '🌈', label: 'Rainbow' }, { v: 'candle', icon: '🕯', label: 'Candle' },
+      { v: 'solid', icon: '🟠', label: 'Solid' }, { v: 'chase', icon: '☄️', label: 'Chase' },
+      { v: 'sparkle', icon: '✨', label: 'Sparkle' }, { v: 'off', icon: '⏻', label: 'Off' },
+    ];
+    const USES_COLOR = ['solid', 'chase', 'sparkle'];
+    const SWATCHES = ['ff6a00', 'ff0000', 'ff00aa', '7a00ff', '0066ff', '00ccff', '00ff66', 'ffffff'];
+    const HINTS = {
+      screen: (l) => l.syncing ? 'Following the monitor live.' : 'Waiting for HyperHDR on the Mac; showing Dexi\'s mood meanwhile. Stuck? make lights DO=restart',
+      mood: () => 'Glows in Dexi\'s colour and breathes; dims when Dexi sleeps.',
+      rainbow: () => 'A slow flowing rainbow.',
+      candle: () => 'Warm flickering firelight.',
+      solid: () => 'One steady colour.',
+      chase: () => 'A comet running round the monitor.',
+      sparkle: () => 'Random twinkles.',
+      off: () => 'Strip is off.',
+    };
+    let lightBusy = false;
     let state = {};
 
     async function call(path) {
@@ -202,24 +302,50 @@
         b.onclick = () => call('/mood?m=' + m);
         return b;
       }));
-      const l = s.light || {};
-      $('sync').textContent = l.syncing ? '· screen sync live' : '';
-      $('light').replaceChildren(...LIGHT_MODES.map((m) => {
-        const b = document.createElement('button');
-        b.textContent = m;
-        b.className = m === l.mode ? 'sel' : '';
-        b.onclick = () => fetch('/light?mode=' + m).then(() => call('/state'));
-        return b;
-      }));
-      if (document.activeElement !== $('bri')) $('bri').value = l.bri ?? 160;
-      if (document.activeElement !== $('color') && l.color) $('color').value = '#' + l.color;
-      $('sync').className = l.sync ? 'sel' : '';
-      $('sync').textContent = 'Screen sync: ' + (l.sync ? 'on' : 'off');
+      renderLights(s.light || {});
     }
 
-    $('sync').onclick = () => fetch('/light?sync=' + (state.light && state.light.sync ? 'off' : 'on')).then(() => call('/state'));
-    $('color').onchange = () => fetch('/light?color=' + $('color').value.slice(1)).then(() => call('/state'));
-    $('bri').onchange = () => fetch('/light?bri=' + $('bri').value).then(() => call('/state'));
+    function lightChoice(l) {
+      if (l.mode === 'off') return 'off';
+      return l.sync ? 'screen' : l.mode;
+    }
+
+    function renderLights(l) {
+      const cur = lightChoice(l);
+      $('light').replaceChildren(...LIGHTS.map((o) => {
+        const b = document.createElement('button');
+        b.innerHTML = `<i>${o.icon}</i>${o.label}`;
+        b.className = o.v === cur ? 'sel' : '';
+        b.onclick = () => setLight(o.v === 'screen' ? 'sync=on&mode=mood' : 'sync=off&mode=' + o.v);
+        return b;
+      }));
+      $('lightHint').textContent = (HINTS[cur] || (() => ''))(l);
+      $('colorRow').style.display = USES_COLOR.includes(cur) ? '' : 'none';
+      $('briRow').style.display = cur === 'off' || cur === 'screen' ? 'none' : '';
+      $('swatches').replaceChildren(...SWATCHES.map((c) => {
+        const b = document.createElement('button');
+        b.style.background = '#' + c;
+        b.className = c === l.color ? 'sel' : '';
+        b.setAttribute('aria-label', '#' + c);
+        b.onclick = () => setLight('color=' + c);
+        return b;
+      }));
+      if (document.activeElement !== $('color') && l.color) $('color').value = '#' + l.color;
+      if (document.activeElement !== $('bri')) $('bri').value = l.bri ?? 160;
+      $('briPct').textContent = Math.round($('bri').value / 2.55) + '%';
+    }
+
+    async function setLight(q) {
+      if (lightBusy) return;
+      lightBusy = true;
+      const res = await fetch('/light?' + q).catch(() => null);
+      lightBusy = false;
+      if (res && res.ok) renderLights(state.light = await res.json());
+    }
+
+    $('color').onchange = () => setLight('color=' + $('color').value.slice(1));
+    $('bri').oninput = () => { $('briPct').textContent = Math.round($('bri').value / 2.55) + '%'; };
+    $('bri').onchange = () => setLight('bri=' + $('bri').value);
 
     $('sayForm').onsubmit = (e) => {
       e.preventDefault();
