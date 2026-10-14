@@ -33,6 +33,8 @@ class Strip {
   Mode mode() const { return mode_; }
   uint8_t brightness() const { return brightness_; }
   bool syncing() const { return syncing_; }
+  uint32_t packets() const { return packets_; }
+  uint32_t lastAverage() const { return avg_; }  // 0xRRGGBB of the last synced frame
 
   static const char* modeName(Mode m);
   static bool modeFromName(const String& s, Mode* out);
@@ -50,6 +52,8 @@ class Strip {
   uint16_t maxMa_;
   volatile bool listening_ = false;
   volatile bool syncing_ = false;
+  volatile uint32_t packets_ = 0;
+  volatile uint32_t avg_ = 0;
   volatile Mood mood_ = Mood::kNeutral;
   uint32_t lastPacket_ = 0;
   uint32_t lastFrame_ = 0;

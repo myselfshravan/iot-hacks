@@ -68,11 +68,15 @@ bool Strip::receive(uint32_t now) {
   bool got = false;
   while (int len = udp_.parsePacket()) {
     uint16_t n = min<int>(len / 3, px_.numPixels() - skip_);
+    uint32_t sum[3] = {0, 0, 0};
     for (uint16_t i = 0; i < n; i++) {
       uint8_t rgb[3];
       udp_.read(rgb, 3);
       px_.setPixelColor(skip_ + i, rgb[0], rgb[1], rgb[2]);
+      for (int c = 0; c < 3; c++) sum[c] += rgb[c];
     }
+    if (n) avg_ = (sum[0] / n) << 16 | (sum[1] / n) << 8 | (sum[2] / n);
+    packets_++;
     udp_.flush();
     got = true;
   }

@@ -14,7 +14,8 @@ History of the original plan: `../../docs/journal.md` §20.
 - Device `udpraw` → `dexi.local`:5568. Use the hostname, because the IP changes after Wi-Fi drops.
 - Capture: `systemInstanceEnable` on, USB capture off, system capture device `Display id: 2` (the LG; `reorder_displays` does not pick the screen). Restart HyperHDR if the monitor was off when it started.
 - 102 LEDs written as an explicit list: right bottom→top, top right→left, left top→bottom, bottom left→right. Capture depth: 5% on the sides, 10% top and bottom.
-- Low latency: 60 fps capture, smoothing 40 ms at 60 Hz, black-bar detection on.
+- Latency: 25 fps capture, smoothing 40 ms at 60 Hz, black-bar detection off. At 60 fps HyperHDR fell 5–10 s behind on this Mac; Dexi itself was verified to react instantly to raw UDP.
+- `/light` reports `packets` and `avg` (average colour of the last frame) for debugging.
 - Colour: gamma 1.0, saturation 1.3, luminance 1.15. Screen sync runs at full brightness under the 1.9 A cap; the brightness slider only affects mood and rainbow.
 - Firmware: the strip runs in its own task on core 0 and polls UDP every 1 ms, so the TFT never delays it.
 - macOS system capture on, display `auto`.
