@@ -51,7 +51,7 @@ Screen screen(config::kTftCs, config::kTftDc, config::kTftRst, config::kTftBackl
 Pet pet;
 PetStore pets(pet);
 Touch touch(config::kTouchPin, config::kTouchPowerPin, config::kTouchGroundPin);
-Strip strip(config::kLedPin, config::kLedCount, config::kLedMaxMa);
+Strip strip(config::kLedPin, config::kLedCount, config::kLedSkip, config::kLedMaxMa);
 WifiLink wifi;
 WebServer server(80);
 bool servicesUp = false;
@@ -174,7 +174,7 @@ void loop() {
   if (updating) return;
 
   uint32_t now = millis();
-  strip.update(now, pet.mood());
+  strip.setMood(pet.mood());
   if (touch.update(now)) reactToGesture(touch.last());
   reactWhileTouching(now);
   if (now - lastFrame < config::kFrameMs) return;

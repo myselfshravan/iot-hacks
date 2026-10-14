@@ -5,7 +5,7 @@ not a separate WLED board. Wiring: `docs/wiring.md` (Dexi LED strip).
 
 - **Modes** (phone page or `GET /light?mode=mood|rainbow|off&bri=0..255`): mood glow (Dexi's colour, breathing), rainbow, off.
 - **Screen sync:** HyperHDR on the Mac → LED device type **udpraw**, host `dexi.local`, port 5568. It overrides the mode while streaming and hands back 2 s after it stops.
-- **LED layout:** 103 at 60/m on the 53.5 × 32 cm monitor, starting bottom-right and running anticlockwise: right 20, top 32, left 19, bottom 32. In HyperHDR: input position bottom-right, direction anticlockwise (counter-clockwise).
+- **LED layout:** 103 on the strip. LED 0 sits outside the monitor and is kept dark (`kLedSkip`). The visible 102 run from the bottom-right, anticlockwise: right 19, top 32, left 19, bottom 32. HyperHDR sends 102. In HyperHDR: input position bottom-right, direction anticlockwise (counter-clockwise).
 - **Why not WLED:** WLED would replace Dexi's firmware. Keeping our own lets the strip react to Dexi.
 
 History of the original plan: `../../docs/journal.md` §20.
@@ -13,6 +13,9 @@ History of the original plan: `../../docs/journal.md` §20.
 **HyperHDR 22 setup (done 2026-10-14):**
 - Device `udpraw` → `dexi.local`:5568. Use the hostname, because the IP changes after Wi-Fi drops.
 - Capture: `systemInstanceEnable` on, USB capture off, system capture device `Display id: 2` (the LG; `reorder_displays` does not pick the screen). Restart HyperHDR if the monitor was off when it started.
-- 103 LEDs written as an explicit list: right bottom→top, top right→left, left top→bottom, bottom left→right.
+- 102 LEDs written as an explicit list: right bottom→top, top right→left, left top→bottom, bottom left→right. Capture depth: 5% on the sides, 10% top and bottom.
+- Low latency: 60 fps capture, smoothing 40 ms at 60 Hz, black-bar detection on.
+- Colour: gamma 1.0, saturation 1.3, luminance 1.15. Screen sync runs at full brightness under the 1.9 A cap; the brightness slider only affects mood and rainbow.
+- Firmware: the strip runs in its own task on core 0 and polls UDP every 1 ms, so the TFT never delays it.
 - macOS system capture on, display `auto`.
 - Opening the Classic layout editor and saving regenerates the list from its own fields, so re-check the direction after doing that.

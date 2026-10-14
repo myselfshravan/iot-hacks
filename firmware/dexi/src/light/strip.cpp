@@ -19,8 +19,8 @@ void unpack565(uint16_t c, float out[3]) {
 
 }  // namespace
 
-Strip::Strip(uint8_t pin, uint16_t count, uint16_t maxMilliamps)
-    : px_(count, pin, NEO_GRB + NEO_KHZ800), maxMa_(maxMilliamps) {}
+Strip::Strip(uint8_t pin, uint16_t count, uint16_t skip, uint16_t maxMilliamps)
+    : px_(count, pin, NEO_GRB + NEO_KHZ800), skip_(skip), maxMa_(maxMilliamps) {}
 
 void Strip::begin() {
   Preferences p;
@@ -32,6 +32,14 @@ void Strip::begin() {
   px_.begin();
   px_.clear();
   px_.show();
+  xTaskCreatePinnedToCore(taskMain, "strip", 4096, this, 2, nullptr, 0);
+}
+
+void Strip::taskMain(void* self) {
+  for (;;) {
+    static_cast<Strip*>(self)->update(millis());
+    vTaskDelay(1);
+  }
 }
 
 void Strip::startNetwork() { listening_ = udp_.begin(config::kLedUdpPort); }
@@ -59,11 +67,11 @@ bool Strip::receive(uint32_t now) {
   if (!listening_) return false;
   bool got = false;
   while (int len = udp_.parsePacket()) {
-    uint16_t n = min<int>(len / 3, px_.numPixels());
+    uint16_t n = min<int>(len / 3, px_.numPixels() - skip_);
     for (uint16_t i = 0; i < n; i++) {
       uint8_t rgb[3];
       udp_.read(rgb, 3);
-      px_.setPixelColor(i, rgb[0], rgb[1], rgb[2]);
+      px_.setPixelColor(skip_ + i, rgb[0], rgb[1], rgb[2]);
     }
     udp_.flush();
     got = true;
@@ -72,7 +80,8 @@ bool Strip::receive(uint32_t now) {
   return got;
 }
 
-void Strip::update(uint32_t now, Mood mood) {
+void Strip::update(uint32_t now) {
+  Mood mood = mood_;
   if (mode_ == Mode::kOff) {
     syncing_ = false;
     if (listening_) while (udp_.parsePacket()) udp_.flush();  // drop the stream
@@ -86,7 +95,7 @@ void Strip::update(uint32_t now, Mood mood) {
 
   if (receive(now)) {
     syncing_ = true;
-    show();
+    show(255);
     return;
   }
   syncing_ = syncing_ && now - lastPacket_ < kSyncTimeoutMs;
@@ -110,21 +119,22 @@ void Strip::update(uint32_t now, Mood mood) {
                            px_.gamma8(glow_[2] * breath));
     px_.fill(c);
   }
-  show();
+  for (uint16_t i = 0; i < skip_; i++) px_.setPixelColor(i, 0);
+  show(brightness_);
 }
 
 // Applies brightness, then scales down further if the frame would draw more
 // than maxMa_ (about 20 mA per channel at full, plus ~1 mA idle per LED).
-void Strip::show() {
+void Strip::show(uint8_t brightness) {
   uint16_t n = px_.numPixels();
   uint32_t sum = 0;
   for (uint16_t i = 0; i < n; i++) {
     uint32_t c = px_.getPixelColor(i);
     sum += ((c >> 16) & 0xFF) + ((c >> 8) & 0xFF) + (c & 0xFF);
   }
-  uint32_t ma = sum * brightness_ / 255 * 20 / 255 + n;
-  uint8_t bri = brightness_;
-  if (ma > maxMa_) bri = (uint32_t)brightness_ * (maxMa_ - n) / (ma - n);
+  uint32_t ma = sum * brightness / 255 * 20 / 255 + n;
+  uint8_t bri = brightness;
+  if (ma > maxMa_) bri = (uint32_t)brightness * (maxMa_ - n) / (ma - n);
   // setBrightness is lossy on stored pixels, so scale a copy instead.
   static uint8_t saved[3 * 512];
   uint8_t* raw = px_.getPixels();

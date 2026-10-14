@@ -27,8 +27,10 @@ constexpr uint8_t kStatusLedPin = 2;
 
 // WS2812B strip behind the monitor (own 5 V 2 A adapter, common GND).
 constexpr uint8_t kLedPin = 25;          // DIN through 220R
-constexpr uint16_t kLedCount = 103;      // from bottom-right, anticlockwise: right 20, top 32, left 19, bottom 32
-constexpr uint16_t kLedMaxMa = 1800;     // stays under the 2 A adapter
+constexpr uint16_t kLedCount = 103;      // whole run, wire end first
+constexpr uint16_t kLedSkip = 1;         // LED 0 sits outside the monitor: kept dark
+// Visible 102, from bottom-right, anticlockwise: right 19, top 32, left 19, bottom 32
+constexpr uint16_t kLedMaxMa = 1900;     // stays under the 2 A adapter
 constexpr uint16_t kLedUdpPort = 5568;   // HyperHDR "udpraw" device
 
 constexpr uint32_t kFrameMs = 33;       // ~30 fps

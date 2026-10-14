@@ -5,7 +5,11 @@
 //   rainbow  test pattern
 //   off
 // In any mode except off, colours streamed by HyperHDR on the Mac take over
-// (screen sync) and the strip falls back to its mode 2 s after the stream stops.
+// (screen sync, always at full brightness under the current cap) and the strip
+// falls back to its mode 2 s after the stream stops.
+// The strip runs in its own task on core 0, polling UDP every millisecond, so
+// screen sync never waits for the TFT (which blocks core 1 for ~21 ms a frame).
+// The first `skip` LEDs sit outside the monitor and stay dark.
 // HyperHDR device: "udpraw", host dexi.local, port config::kLedUdpPort, one RGB
 // triplet per LED in strip order. Wiring: docs/wiring.md (Dexi LED strip).
 #pragma once
@@ -19,10 +23,10 @@ class Strip {
  public:
   enum class Mode : uint8_t { kOff, kMood, kRainbow, kCount };
 
-  Strip(uint8_t pin, uint16_t count, uint16_t maxMilliamps);
-  void begin();                 // restores mode and brightness
+  Strip(uint8_t pin, uint16_t count, uint16_t skip, uint16_t maxMilliamps);
+  void begin();                 // restores mode and brightness, starts the task
   void startNetwork();          // after Wi-Fi is up: listen for HyperHDR
-  void update(uint32_t now, Mood mood);
+  void setMood(Mood m) { mood_ = m; }
 
   void setMode(Mode m);
   void setBrightness(uint8_t b);
@@ -34,18 +38,22 @@ class Strip {
   static bool modeFromName(const String& s, Mode* out);
 
  private:
-  void show();
+  static void taskMain(void* self);
+  void update(uint32_t now);
+  void show(uint8_t brightness);
   bool receive(uint32_t now);
   void save();
 
   Adafruit_NeoPixel px_;
   WiFiUDP udp_;
+  uint16_t skip_;
   uint16_t maxMa_;
-  bool listening_ = false;
-  bool syncing_ = false;
+  volatile bool listening_ = false;
+  volatile bool syncing_ = false;
+  volatile Mood mood_ = Mood::kNeutral;
   uint32_t lastPacket_ = 0;
   uint32_t lastFrame_ = 0;
-  Mode mode_ = Mode::kMood;
-  uint8_t brightness_ = 160;
+  volatile Mode mode_ = Mode::kMood;
+  volatile uint8_t brightness_ = 160;
   float glow_[3] = {0, 0, 0};   // eased mood colour
 };
