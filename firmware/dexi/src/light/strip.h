@@ -7,8 +7,6 @@
 // In any mode except off, colours streamed by HyperHDR on the Mac take over
 // (screen sync, always at full brightness under the current cap) and the strip
 // falls back to its mode 2 s after the stream stops.
-// The strip runs in its own task on core 0, polling UDP every millisecond, so
-// screen sync never waits for the TFT (which blocks core 1 for ~21 ms a frame).
 // The first `skip` LEDs sit outside the monitor and stay dark.
 // HyperHDR device: "udpraw", host dexi.local, port config::kLedUdpPort, one RGB
 // triplet per LED in strip order. Wiring: docs/wiring.md (Dexi LED strip).
@@ -24,9 +22,10 @@ class Strip {
   enum class Mode : uint8_t { kOff, kMood, kRainbow, kCount };
 
   Strip(uint8_t pin, uint16_t count, uint16_t skip, uint16_t maxMilliamps);
-  void begin();                 // restores mode and brightness, starts the task
+  void begin();                 // restores mode and brightness
   void startNetwork();          // after Wi-Fi is up: listen for HyperHDR
   void setMood(Mood m) { mood_ = m; }
+  void update(uint32_t now);    // call every loop()
 
   void setMode(Mode m);
   void setBrightness(uint8_t b);
@@ -40,8 +39,6 @@ class Strip {
   static bool modeFromName(const String& s, Mode* out);
 
  private:
-  static void taskMain(void* self);
-  void update(uint32_t now);
   void show(uint8_t brightness);
   bool receive(uint32_t now);
   void save();

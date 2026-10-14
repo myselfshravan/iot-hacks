@@ -175,6 +175,7 @@ void loop() {
 
   uint32_t now = millis();
   strip.setMood(pet.mood());
+  strip.update(now);
   if (touch.update(now)) reactToGesture(touch.last());
   reactWhileTouching(now);
   if (now - lastFrame < config::kFrameMs) return;

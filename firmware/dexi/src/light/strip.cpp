@@ -32,14 +32,6 @@ void Strip::begin() {
   px_.begin();
   px_.clear();
   px_.show();
-  xTaskCreatePinnedToCore(taskMain, "strip", 4096, this, 2, nullptr, 0);
-}
-
-void Strip::taskMain(void* self) {
-  for (;;) {
-    static_cast<Strip*>(self)->update(millis());
-    vTaskDelay(1);
-  }
 }
 
 void Strip::startNetwork() { listening_ = udp_.begin(config::kLedUdpPort); }
