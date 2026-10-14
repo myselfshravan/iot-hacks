@@ -38,10 +38,7 @@ check:
 intellisense:
 	python3 tools/vscode_intellisense.py
 
-# Restart screen sync on demand: relaunch HyperHDR, then confirm Dexi is getting colours.
+# Monitor LED strip: `make lights` (status), `make lights DO=off`, DO="sync off",
+# DO="chase ff0000", DO=restart (HyperHDR stuck). See tools/lights.sh.
 lights:
-	-pkill -f hyperhdr.app
-	sleep 3
-	open -a hyperhdr
-	sleep 10
-	curl -s -m 5 http://$(or $(HOST),dexi.local)/light; echo
+	@DEXI=$(or $(HOST),dexi.local) tools/lights.sh $(DO)

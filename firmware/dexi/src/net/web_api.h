@@ -10,7 +10,8 @@
 //   GET  /pets/use?name=clawd    switch pet ("builtin" = the drawn blob)
 //   GET  /pets/delete?name=clawd
 //   POST /pets/upload?name=clawd multipart .pak (dexi_brain/petpacks.py)
-//   GET  /light[?mode=mood|rainbow|off][&bri=0..255]  {"mode","bri","syncing"}
+//   GET  /light[?mode=off|mood|rainbow|solid|chase|sparkle|candle][&color=ff6a00][&sync=on|off][&bri=0..255]
+//                                {"mode","color","sync","bri","syncing",...}
 //   POST /frame?secs=10          multipart file: raw 128x160 RGB565 (little-endian),
 //                                40960 bytes, shown instead of the face for secs
 #pragma once

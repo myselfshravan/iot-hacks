@@ -1,12 +1,16 @@
 // WS2812B strip behind the monitor, driven by Dexi's board.
 //
-// Modes (kept across reboots):
+// Modes (kept across reboots, with colour, brightness and the sync switch):
 //   mood     glows in Dexi's body colour and breathes; dims while it sleeps
-//   rainbow  test pattern
-//   off
-// In any mode except off, colours streamed by HyperHDR on the Mac take over
-// (screen sync, always at full brightness under the current cap) and the strip
-// falls back to its mode 2 s after the stream stops.
+//   rainbow  flowing rainbow
+//   solid    one colour (setColor)
+//   chase    a comet of the colour running round the monitor
+//   sparkle  twinkles of the colour on black
+//   candle   warm flickering firelight
+//   off      everything dark, stream ignored
+// With sync on, colours streamed by HyperHDR on the Mac take over (screen sync,
+// always at full brightness under the current cap) and the strip falls back to
+// its mode 2 s after the stream stops. Sync off: the mode shows, stream ignored.
 // The first `skip` LEDs sit outside the monitor and stay dark.
 // HyperHDR device: "udpraw", host dexi.local, port config::kLedUdpPort, one RGB
 // triplet per LED in strip order. Wiring: docs/wiring.md (Dexi LED strip).
@@ -19,7 +23,8 @@
 
 class Strip {
  public:
-  enum class Mode : uint8_t { kOff, kMood, kRainbow, kCount };
+  // Order is stored in flash: append only.
+  enum class Mode : uint8_t { kOff, kMood, kRainbow, kSolid, kChase, kSparkle, kCandle, kCount };
 
   Strip(uint8_t pin, uint16_t count, uint16_t skip, uint16_t maxMilliamps);
   void begin();                 // restores mode and brightness
@@ -29,8 +34,12 @@ class Strip {
 
   void setMode(Mode m);
   void setBrightness(uint8_t b);
+  void setColor(uint32_t rgb);
+  void setSync(bool on);
   Mode mode() const { return mode_; }
   uint8_t brightness() const { return brightness_; }
+  uint32_t color() const { return color_; }
+  bool syncEnabled() const { return sync_; }
   bool syncing() const { return syncing_; }
   uint32_t packets() const { return packets_; }
   uint32_t loopGapMs() const { return gapReport_; }  // worst gap between update() calls, last 2 s
@@ -43,6 +52,8 @@ class Strip {
  private:
   void show(uint8_t brightness);
   bool receive(uint32_t now);
+  void drain();
+  void render(uint32_t now, Mood mood);
   void save();
 
   Adafruit_NeoPixel px_;
@@ -60,5 +71,8 @@ class Strip {
   uint32_t lastFrame_ = 0;
   volatile Mode mode_ = Mode::kMood;
   volatile uint8_t brightness_ = 160;
+  volatile uint32_t color_ = 0xFF6A00;  // amber
+  volatile bool sync_ = true;
+  uint8_t* flicker_ = nullptr;  // candle: per-LED level
   float glow_[3] = {0, 0, 0};   // eased mood colour
 };

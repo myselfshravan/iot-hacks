@@ -167,6 +167,10 @@
     <section class="card">
       <div class="label">Lights <span id="sync"></span></div>
       <div class="moods" id="light"></div>
+      <div class="say" style="margin-top:10px">
+        <button id="sync">Screen sync</button>
+        <input id="color" type="color" aria-label="Effect colour" style="flex:0 0 56px;padding:0">
+      </div>
       <input id="bri" type="range" min="0" max="255" aria-label="Brightness">
     </section>
     <section class="card">
@@ -179,7 +183,7 @@
     const $ = (id) => document.getElementById(id);
     const MOODS = ['neutral', 'happy', 'excited', 'love', 'sleepy', 'sad',
       'angry', 'surprised', 'hot', 'cold', 'curious'];
-    const LIGHT_MODES = ['mood', 'rainbow', 'off'];
+    const LIGHT_MODES = ['mood', 'rainbow', 'solid', 'chase', 'sparkle', 'candle', 'off'];
     let state = {};
 
     async function call(path) {
@@ -208,8 +212,13 @@
         return b;
       }));
       if (document.activeElement !== $('bri')) $('bri').value = l.bri ?? 160;
+      if (document.activeElement !== $('color') && l.color) $('color').value = '#' + l.color;
+      $('sync').className = l.sync ? 'sel' : '';
+      $('sync').textContent = 'Screen sync: ' + (l.sync ? 'on' : 'off');
     }
 
+    $('sync').onclick = () => fetch('/light?sync=' + (state.light && state.light.sync ? 'off' : 'on')).then(() => call('/state'));
+    $('color').onchange = () => fetch('/light?color=' + $('color').value.slice(1)).then(() => call('/state'));
     $('bri').onchange = () => fetch('/light?bri=' + $('bri').value).then(() => call('/state'));
 
     $('sayForm').onsubmit = (e) => {

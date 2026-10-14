@@ -6,7 +6,7 @@
 
 namespace {
 
-constexpr const char* kModeNames[] = {"off", "mood", "rainbow"};
+constexpr const char* kModeNames[] = {"off", "mood", "rainbow", "solid", "chase", "sparkle", "candle"};
 constexpr uint32_t kSyncTimeoutMs = 2000;
 constexpr uint32_t kFrameMs = 20;  // 50 fps for mood/rainbow
 
@@ -28,7 +28,10 @@ void Strip::begin() {
   uint8_t m = p.getUChar("mode", (uint8_t)Mode::kMood);
   mode_ = m < (uint8_t)Mode::kCount ? (Mode)m : Mode::kMood;
   brightness_ = p.getUChar("bri", brightness_);
+  color_ = p.getULong("color", color_);
+  sync_ = p.getBool("sync", sync_);
   p.end();
+  flicker_ = (uint8_t*)calloc(px_.numPixels(), 1);
   px_.begin();
   px_.clear();
   px_.show();
@@ -46,11 +49,23 @@ void Strip::setBrightness(uint8_t b) {
   save();
 }
 
+void Strip::setColor(uint32_t rgb) {
+  color_ = rgb & 0xFFFFFF;
+  save();
+}
+
+void Strip::setSync(bool on) {
+  sync_ = on;
+  save();
+}
+
 void Strip::save() {
   Preferences p;
   p.begin("strip", false);
   p.putUChar("mode", (uint8_t)mode_);
   p.putUChar("bri", brightness_);
+  p.putULong("color", color_);
+  p.putBool("sync", sync_);
   p.end();
 }
 
@@ -91,7 +106,7 @@ void Strip::update(uint32_t now) {
   }
   if (mode_ == Mode::kOff) {
     syncing_ = false;
-    if (listening_) while (udp_.parsePacket()) udp_.flush();  // drop the stream
+    drain();
     if (now - lastFrame_ > 1000) {  // repaint now and then in case of a glitch
       lastFrame_ = now;
       px_.clear();
@@ -100,7 +115,10 @@ void Strip::update(uint32_t now) {
     return;
   }
 
-  if (receive(now)) {
+  if (!sync_) {
+    syncing_ = false;
+    drain();
+  } else if (receive(now)) {
     syncing_ = true;
     show(255);
     return;
@@ -108,8 +126,55 @@ void Strip::update(uint32_t now) {
   syncing_ = syncing_ && now - lastPacket_ < kSyncTimeoutMs;
   if (syncing_ || now - lastFrame_ < kFrameMs) return;
   lastFrame_ = now;
+  render(now, mood);
+  for (uint16_t i = 0; i < skip_; i++) px_.setPixelColor(i, 0);
+  show(brightness_);
+}
 
+void Strip::drain() {
+  if (listening_) while (udp_.parsePacket()) udp_.flush();
+}
+
+void Strip::render(uint32_t now, Mood mood) {
   uint16_t n = px_.numPixels();
+  uint8_t r = color_ >> 16, g = color_ >> 8, b = color_;
+  switch (mode_) {
+    case Mode::kSolid:
+      px_.fill(px_.Color(r, g, b));
+      return;
+    case Mode::kChase: {
+      // A comet with a 16-LED fading tail, one lap of the monitor every ~3 s.
+      uint16_t len = n - skip_;
+      uint16_t head = (now / 30) % len;
+      px_.clear();
+      for (uint16_t t = 0; t < 16; t++) {
+        float k = 1.0f - t / 16.0f;
+        k *= k;
+        px_.setPixelColor(skip_ + (head + len - t) % len, r * k, g * k, b * k);
+      }
+      return;
+    }
+    case Mode::kSparkle: {
+      for (uint16_t i = 0; i < n; i++) {  // fade everything a little
+        uint32_t c = px_.getPixelColor(i);
+        px_.setPixelColor(i, ((c >> 16) & 0xFF) * 7 / 8, ((c >> 8) & 0xFF) * 7 / 8, (c & 0xFF) * 7 / 8);
+      }
+      if (random(3) == 0) px_.setPixelColor(random(skip_, n), r, g, b);
+      return;
+    }
+    case Mode::kCandle: {
+      // Each LED drifts toward a random level; warm orange like a flame.
+      for (uint16_t i = 0; i < n; i++) {
+        uint8_t target = random(90, 256);
+        flicker_[i] = (flicker_[i] * 6 + target * 2) / 8;
+        uint8_t v = flicker_[i];
+        px_.setPixelColor(i, v, v * 45 / 100, v * 8 / 100);
+      }
+      return;
+    }
+    default:
+      break;
+  }
   if (mode_ == Mode::kRainbow) {
     for (uint16_t i = 0; i < n; i++)
       px_.setPixelColor(i, px_.gamma32(px_.ColorHSV(now * 12 + i * 65536UL / n)));
@@ -126,8 +191,6 @@ void Strip::update(uint32_t now) {
                            px_.gamma8(glow_[2] * breath));
     px_.fill(c);
   }
-  for (uint16_t i = 0; i < skip_; i++) px_.setPixelColor(i, 0);
-  show(brightness_);
 }
 
 // Applies brightness, then scales down further if the frame would draw more

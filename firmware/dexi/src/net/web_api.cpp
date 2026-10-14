@@ -55,7 +55,9 @@ String stateJson() {
 
 String lightJson() {
   const Strip& st = deps->strip;
-  return String("{\"mode\":\"") + Strip::modeName(st.mode()) + "\",\"bri\":" +
+  return String("{\"mode\":\"") + Strip::modeName(st.mode()) + "\",\"color\":\"" +
+         String(st.color() | 0x1000000, HEX).substring(1) + "\",\"sync\":" +
+         (st.syncEnabled() ? "true" : "false") + ",\"bri\":" +
          String(st.brightness()) + ",\"syncing\":" + (st.syncing() ? "true" : "false") +
          ",\"packets\":" + String(st.packets()) + ",\"loop_gap_ms\":" + String(st.loopGapMs()) +
          ",\"queued\":" + String(st.queued()) + ",\"avg\":\"#" + String(st.lastAverage() | 0x1000000, HEX).substring(1) + "\"}";
@@ -70,6 +72,8 @@ void handleLight() {
     }
     deps->strip.setMode(m);
   }
+  if (srv->hasArg("color")) deps->strip.setColor(strtoul(srv->arg("color").c_str(), nullptr, 16));
+  if (srv->hasArg("sync")) deps->strip.setSync(srv->arg("sync") != "0" && srv->arg("sync") != "off");
   if (srv->hasArg("bri")) deps->strip.setBrightness(constrain(srv->arg("bri").toInt(), 0, 255));
   srv->send(200, "application/json", lightJson());
 }
