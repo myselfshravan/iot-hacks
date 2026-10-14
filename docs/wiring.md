@@ -126,5 +126,5 @@ The strip has its own 5 V 2 A adapter. Its current never flows through the ESP32
 - Wire to the **input end**: the printed arrows point away from it.
 - Keep the D25 → DIN wire short (under about 30 cm).
 - Do **not** join the adapter's 5 V to the ESP32's VIN while USB is plugged in.
-- Firmware caps the draw at 1800 mA (`kLedMaxMa`). 102 LEDs are driven (`kLedCount`); any LEDs past that stay dark.
+- Firmware caps the draw at 1800 mA (`kLedMaxMa`). 103 LEDs are driven (`kLedCount`); any LEDs past that stay dark.
 - Hypothesis: 3.3 V data into a 5 V strip usually works. If the first LED flickers, add a 74AHCT125 level shifter.
