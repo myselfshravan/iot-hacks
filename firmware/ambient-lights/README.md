@@ -11,7 +11,8 @@ not a separate WLED board. Wiring: `docs/wiring.md` (Dexi LED strip).
 History of the original plan: `../../docs/journal.md` §20.
 
 **HyperHDR 22 setup (done 2026-10-14):**
-- Device `udpraw` → 192.168.1.24:5568.
+- Device `udpraw` → `dexi.local`:5568. Use the hostname, because the IP changes after Wi-Fi drops.
+- Capture: `systemInstanceEnable` on, USB capture off, `reorder_displays` 1 so it grabs the LG (display 2). Restart HyperHDR if the monitor was off when it started.
 - 103 LEDs written as an explicit list: right bottom→top, top right→left, left top→bottom, bottom left→right.
 - macOS system capture on, display `auto`.
 - Opening the Classic layout editor and saving regenerates the list from its own fields, so re-check the direction after doing that.
