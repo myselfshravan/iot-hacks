@@ -89,6 +89,19 @@ void startServices() {
   pet.say("I'm online!", 3000);
 }
 
+// Wi-Fi status: the onboard blue LED, plus a red "no wifi" tag on screen.
+void showWifiStatus(uint32_t now) {
+  bool online = wifi.online();
+  digitalWrite(config::kStatusLedPin, online || (now / 500) % 2);
+  if (online) return;
+  GFXcanvas16& c = screen.canvas();
+  c.fillRoundRect(2, 2, 45, 11, 3, ST77XX_RED);
+  c.setTextSize(1);
+  c.setTextColor(ST77XX_WHITE);
+  c.setCursor(5, 4);
+  c.print("no wifi");
+}
+
 // Instant local reactions to touch, scaled by how Dexi is being touched. The
 // brain sees the full gesture in /state and has the LLM respond to it too.
 void reactWhileTouching(uint32_t now) {
@@ -140,6 +153,7 @@ void setup() {
   Serial.printf("\nDexi boot (reset reason %d)\n", (int)esp_reset_reason());
   randomSeed(esp_random());
   screen.begin(config::kTftRotation, config::kTftSpiHz);
+  pinMode(config::kStatusLedPin, OUTPUT);
   touch.begin();
   strip.begin();
   pets.begin();
@@ -171,6 +185,7 @@ void loop() {
     screen.present(img);
   } else {
     pet.draw(screen.canvas(), now);
+    showWifiStatus(now);
     screen.present();
   }
 }

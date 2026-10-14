@@ -22,6 +22,9 @@ constexpr uint8_t kTouchPin = 19;       // TTP223 I/O (HIGH while touched)
 constexpr uint8_t kTouchPowerPin = 21;  // TTP223 VCC (driven HIGH)
 constexpr uint8_t kTouchGroundPin = 22; // TTP223 GND (driven LOW)
 
+// Onboard blue LED: solid = Wi-Fi up, slow blink = Wi-Fi down.
+constexpr uint8_t kStatusLedPin = 2;
+
 // WS2812B strip behind the monitor (own 5 V 2 A adapter, common GND).
 constexpr uint8_t kLedPin = 25;          // DIN through 220R
 constexpr uint16_t kLedCount = 103;      // from bottom-right, anticlockwise: right 20, top 32, left 19, bottom 32
