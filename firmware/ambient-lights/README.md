@@ -9,3 +9,9 @@ not a separate WLED board. Wiring: `docs/wiring.md` (Dexi LED strip).
 - **Why not WLED:** WLED would replace Dexi's firmware. Keeping our own lets the strip react to Dexi.
 
 History of the original plan: `../../docs/journal.md` §20.
+
+**HyperHDR 22 setup (done 2026-10-14):**
+- Device `udpraw` → 192.168.1.24:5568.
+- 103 LEDs written as an explicit list: right bottom→top, top right→left, left top→bottom, bottom left→right.
+- macOS system capture on, display `auto`.
+- Opening the Classic layout editor and saving regenerates the list from its own fields, so re-check the direction after doing that.

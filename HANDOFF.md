@@ -6,7 +6,7 @@ Layout, commands and rules are in `CLAUDE.md`. History and the original brief ar
 | # | Device | Board | State |
 |---|---|---|---|
 | 1 | **IR hub** (`irhub.local`): **Kelvin** AC remote + projector page | ESP32 #1 | **Fully working:** phone page (one screen), Alexa "Room AC" (replies OK), timer (none / off in / on in, 1-8 h) and sleep, DHT22 live readings. With the 4× 220R LED, the AC obeys without aiming the LED at it. |
-| 2 | **Ambient lights** | ESP32 #2 (shared with Dexi) | Firmware done (`firmware/dexi/src/light/`): mood glow, rainbow, HyperHDR udpraw sync on port 5568. Strip wired and verified (rainbow and mood); HyperHDR setup next. |
+| 2 | **Ambient lights** | ESP32 #2 (shared with Dexi) | Firmware done (`firmware/dexi/src/light/`): mood glow, rainbow, HyperHDR udpraw sync on port 5568. Strip wired and verified; HyperHDR 22 on the Mac streams to it (verified 2026-10-14). |
 | 3 | **Dexi** (AI desk pet) | ESP32 #2 | **v3 running** at `dexi.local`:
 - Pets: the built-in chibi blob, or the Clawd, Calico and Cloudling packs (the active one is chosen in the console).
 - Touch: gesture-aware.
@@ -45,7 +45,7 @@ Brain: `services/dexi-brain`. Its console at localhost:8765 has a replayable tho
 ## Next steps
 1. Put the board near the AC on a USB charger (battery would last only 2-3 days). Run the sensor lead into the outlet air so "AC reacted ✓" works.
 2. Optional: remote access over HTTPS via a Cloudflare Tunnel. This needs an always-on Pi or similar device in the same house.
-3. Dexi (ESP32 #2) also drives the monitor LED strip. Strip verified on D25; next, set up HyperHDR screen sync.
+3. Dexi (ESP32 #2) also drives the monitor LED strip. Strip and HyperHDR screen sync work; tune capture display and layout by eye.
 
 Lessons:
 - Espalexa sends IR inside its callback and blocks Alexa's state poll, so queue the command and send it from loop().
