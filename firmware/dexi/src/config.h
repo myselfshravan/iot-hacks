@@ -22,6 +22,12 @@ constexpr uint8_t kTouchPin = 19;       // TTP223 I/O (HIGH while touched)
 constexpr uint8_t kTouchPowerPin = 21;  // TTP223 VCC (driven HIGH)
 constexpr uint8_t kTouchGroundPin = 22; // TTP223 GND (driven LOW)
 
+// WS2812B strip behind the monitor (own 5 V 2 A adapter, common GND).
+constexpr uint8_t kLedPin = 25;          // DIN through 220R
+constexpr uint16_t kLedCount = 88;       // right 14, top 29, left 14, bottom 25
+constexpr uint16_t kLedMaxMa = 1800;     // stays under the 2 A adapter
+constexpr uint16_t kLedUdpPort = 5568;   // HyperHDR "udpraw" device
+
 constexpr uint32_t kFrameMs = 33;       // ~30 fps
 constexpr uint32_t kWatchdogMs = 30000;
 

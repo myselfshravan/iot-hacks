@@ -127,6 +127,12 @@ const char kControlHtml[] PROGMEM = R"WEB(<!doctype html>
       color: #2a0016;
     }
 
+    #bri {
+      width: 100%;
+      margin-top: 10px;
+      accent-color: var(--acc);
+    }
+
     #pad {
       height: 120px;
       border-radius: 12px;
@@ -164,6 +170,11 @@ const char kControlHtml[] PROGMEM = R"WEB(<!doctype html>
       </form>
     </section>
     <section class="card">
+      <div class="label">Lights <span id="sync"></span></div>
+      <div class="moods" id="light"></div>
+      <input id="bri" type="range" min="0" max="255" aria-label="Brightness">
+    </section>
+    <section class="card">
       <div class="label">Look</div>
       <div id="pad"><span>tap or drag to move Dexi's eyes</span></div>
     </section>
@@ -173,6 +184,7 @@ const char kControlHtml[] PROGMEM = R"WEB(<!doctype html>
     const $ = (id) => document.getElementById(id);
     const MOODS = ['neutral', 'happy', 'excited', 'love', 'sleepy', 'sad',
       'angry', 'surprised', 'hot', 'cold', 'curious'];
+    const LIGHT_MODES = ['mood', 'rainbow', 'off'];
     let state = {};
 
     async function call(path) {
@@ -191,7 +203,19 @@ const char kControlHtml[] PROGMEM = R"WEB(<!doctype html>
         b.onclick = () => call('/mood?m=' + m);
         return b;
       }));
+      const l = s.light || {};
+      $('sync').textContent = l.syncing ? '· screen sync live' : '';
+      $('light').replaceChildren(...LIGHT_MODES.map((m) => {
+        const b = document.createElement('button');
+        b.textContent = m;
+        b.className = m === l.mode ? 'sel' : '';
+        b.onclick = () => fetch('/light?mode=' + m).then(() => call('/state'));
+        return b;
+      }));
+      if (document.activeElement !== $('bri')) $('bri').value = l.bri ?? 160;
     }
+
+    $('bri').onchange = () => fetch('/light?bri=' + $('bri').value).then(() => call('/state'));
 
     $('sayForm').onsubmit = (e) => {
       e.preventDefault();

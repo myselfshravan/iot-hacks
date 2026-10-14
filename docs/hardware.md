@@ -4,8 +4,8 @@
 | Board | Role | Notes |
 |---|---|---|
 | ESP32 #1 (NodeMCU 30-pin, CP2102) | IR hub (Kelvin AC remote + projector) | Too wide for the breadboard: only column j is reachable (`wiring.md`) |
-| ESP32 #2 | Ambient lights | |
-| ESP32 #3 | Desk pet | Still to buy |
+| ESP32 #2 | Dexi + ambient LED strip | Strip on D25 |
+| ESP32 #3 | Free | Still to buy |
 | Arduino Uno R3 | Bench only | No Wi-Fi. Use it for quick 5 V sensor or logic tests, not for products |
 
 One ESP32 can drive every IR device in a room. The same LED sends NEC to the projector and WAVESS to the AC. Several LEDs wired in parallel can cover different directions.
@@ -26,7 +26,7 @@ One ESP32 can drive every IR device in a room. The same LED sends NEC to the pro
 - **IR hub**: ESP32 #1, the generic IR remote replicator (`irhub.local`).
 - **Kelvin**: the AC remote app on the IR hub (page `/`, Alexa "Room AC"). The projector page is `/projector`.
 - **Dexi**: the AI desk pet (ESP32 #2 for now; the lights get the next board).
-- Ambient lights (ESP32 #2): no name yet.
+- Ambient lights: run by Dexi's board, no separate name.
 
 ## Parts on hand
 - 2× ESP32

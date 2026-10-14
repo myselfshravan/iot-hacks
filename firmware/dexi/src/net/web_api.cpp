@@ -28,6 +28,8 @@ String jsonEscape(const String& s) {
   return out;
 }
 
+String lightJson();
+
 String stateJson() {
   String j = "{";
   j += "\"mood\":\"" + String(mood::name(deps->pet.mood())) + "\"";
@@ -44,10 +46,30 @@ String stateJson() {
     j += (i > 1 ? "," : "") + String(g.gapMs[i]);
   j += "]}";
   j += ",\"touching\":" + String(deps->touch.held() ? "true" : "false");
+  j += ",\"light\":" + lightJson();
   j += ",\"uptime_s\":" + String(millis() / 1000);
   j += ",\"rssi\":" + String(WiFi.RSSI());
   j += ",\"free_heap\":" + String(ESP.getFreeHeap());
   return j + "}";
+}
+
+String lightJson() {
+  const Strip& st = deps->strip;
+  return String("{\"mode\":\"") + Strip::modeName(st.mode()) + "\",\"bri\":" +
+         String(st.brightness()) + ",\"syncing\":" + (st.syncing() ? "true" : "false") + "}";
+}
+
+void handleLight() {
+  if (srv->hasArg("mode")) {
+    Strip::Mode m;
+    if (!Strip::modeFromName(srv->arg("mode"), &m)) {
+      srv->send(400, "text/plain", "unknown mode");
+      return;
+    }
+    deps->strip.setMode(m);
+  }
+  if (srv->hasArg("bri")) deps->strip.setBrightness(constrain(srv->arg("bri").toInt(), 0, 255));
+  srv->send(200, "application/json", lightJson());
 }
 
 void sendState() { srv->send(200, "application/json", stateJson()); }
@@ -105,6 +127,7 @@ void begin(WebServer& server, const Deps& d) {
     deps->pet.hop();
     sendState();
   });
+  server.on("/light", HTTP_GET, handleLight);
   server.on("/frame", HTTP_POST, handleFrameDone, handleFrameUpload);
   server.on("/think", HTTP_GET, [] {
     deps->pet.think(secsArg(4));

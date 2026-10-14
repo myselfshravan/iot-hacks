@@ -18,6 +18,7 @@
 //   pet/pet_store.*     packs on LittleFS + which pet is active
 //   pet/world.*         sky by real time of day (NTP), sun/moon, stars, grass, clock
 //   input/touch.*       TTP223 gesture recorder (press durations + gaps)
+//   light/strip.*       WS2812B strip: mood glow + HyperHDR screen sync
 //   net/web_api.*       HTTP API + pushed images
 //   web/control.html    phone control page (embedded by tools/embed_web.py)
 //
@@ -37,6 +38,7 @@
 #include "src/pet/pet_store.h"
 #include "src/pet/world.h"
 #include "src/input/touch.h"
+#include "src/light/strip.h"
 #include "src/net/web_api.h"
 
 #ifdef WIFI_NETWORKS
@@ -49,6 +51,7 @@ Screen screen(config::kTftCs, config::kTftDc, config::kTftRst, config::kTftBackl
 Pet pet;
 PetStore pets(pet);
 Touch touch(config::kTouchPin, config::kTouchPowerPin, config::kTouchGroundPin);
+Strip strip(config::kLedPin, config::kLedCount, config::kLedMaxMa);
 WifiLink wifi;
 WebServer server(80);
 bool servicesUp = false;
@@ -56,7 +59,8 @@ bool updating = false;  // OTA in progress: stop animating, it starves the uploa
 
 void startServices() {
   if (MDNS.begin(config::kHostname)) MDNS.addService("http", "tcp", 80);
-  web_api::begin(server, {pet, pets, touch, wifi});
+  web_api::begin(server, {pet, pets, touch, wifi, strip});
+  strip.startNetwork();
   ArduinoOTA.setHostname(config::kHostname);
   ArduinoOTA.onStart([] {
     updating = true;
@@ -137,6 +141,7 @@ void setup() {
   randomSeed(esp_random());
   screen.begin(config::kTftRotation, config::kTftSpiHz);
   touch.begin();
+  strip.begin();
   pets.begin();
   pet.setMood(Mood::kSleepy, 2000);  // waking up
   wifi.begin(config::kHostname, kNetworks, sizeof(kNetworks) / sizeof(kNetworks[0]));
@@ -155,6 +160,7 @@ void loop() {
   if (updating) return;
 
   uint32_t now = millis();
+  strip.update(now, pet.mood());
   if (touch.update(now)) reactToGesture(touch.last());
   reactWhileTouching(now);
   if (now - lastFrame < config::kFrameMs) return;

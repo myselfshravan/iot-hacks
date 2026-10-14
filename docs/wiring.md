@@ -111,3 +111,20 @@ the generic 30-pin order: D18 is on row 10.
 | GND | D22 (driven LOW) |
 
 Verified 2026-10-11: taps register.
+
+## Dexi LED strip (WS2812B, 60/m, behind the monitor)
+
+The strip has its own 5 V 2 A adapter. Its current never flows through the ESP32. The ESP32 stays on USB.
+
+| From | To |
+|---|---|
+| Adapter + (5 V) | Strip 5V (red) |
+| Adapter − | Strip GND (white/black) **and** any ESP32 GND pin |
+| ESP32 D25 | 220 Ω resistor → strip DIN (green) |
+| 1000 µF capacitor | Across the adapter's + and − at the strip: long leg (+) to 5 V, striped leg (−) to GND |
+
+- Wire to the **input end**: the printed arrows point away from it.
+- Keep the D25 → DIN wire short (under about 30 cm).
+- Do **not** join the adapter's 5 V to the ESP32's VIN while USB is plugged in.
+- Firmware caps the draw at 1800 mA (`kLedMaxMa`). 88 LEDs are driven (`kLedCount`); any LEDs past that stay dark.
+- Hypothesis: 3.3 V data into a 5 V strip usually works. If the first LED flickers, add a 74AHCT125 level shifter.

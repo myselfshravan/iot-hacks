@@ -1,14 +1,11 @@
-# Ambient lights (ESP32 #2): plan
+# Ambient lights: moved into Dexi
 
-WS2812B strip behind the 24" LG monitor, synced to the screen.
+The WS2812B strip behind the monitor is now driven by Dexi's ESP32 (`firmware/dexi/src/light/`),
+not a separate WLED board. Wiring: `docs/wiring.md` (Dexi LED strip).
 
-- **Firmware:** WLED, installed with the web flasher at install.wled.me. No custom code at first.
-- **Screen sync:** HyperHDR on the Mac, sending to WLED over UDP.
-- **LEDs:** about 88 at 60/m (right 14, top 29, left 14, bottom 25). Set the current limit to about 1800 mA.
-- **Wiring:**
-  - 5 V 2 A adapter straight to the strip, with 1000 µF across it at the input.
-  - Common GND with the ESP32.
-  - Data runs from a non-strapping GPIO (16 or 25) through 220R, on a wire shorter than 15 cm.
-- **Later:** custom firmware if WLED limits us, music-reactive mode, and an AC-state glow.
+- **Modes** (phone page or `GET /light?mode=mood|rainbow|off&bri=0..255`): mood glow (Dexi's colour, breathing), rainbow, off.
+- **Screen sync:** HyperHDR on the Mac → LED device type **udpraw**, host `dexi.local`, port 5568. It overrides the mode while streaming and hands back 2 s after it stops.
+- **LED layout:** about 88 at 60/m (right 14, top 29, left 14, bottom 25).
+- **Why not WLED:** WLED would replace Dexi's firmware. Keeping our own lets the strip react to Dexi.
 
-Full notes are in `../../docs/journal.md` §20.
+History of the original plan: `../../docs/journal.md` §20.

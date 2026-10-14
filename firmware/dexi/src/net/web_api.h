@@ -10,6 +10,7 @@
 //   GET  /pets/use?name=clawd    switch pet ("builtin" = the drawn blob)
 //   GET  /pets/delete?name=clawd
 //   POST /pets/upload?name=clawd multipart .pak (dexi_brain/petpacks.py)
+//   GET  /light[?mode=mood|rainbow|off][&bri=0..255]  {"mode","bri","syncing"}
 //   POST /frame?secs=10          multipart file: raw 128x160 RGB565 (little-endian),
 //                                40960 bytes, shown instead of the face for secs
 #pragma once
@@ -21,6 +22,7 @@
 #include "../pet/pet.h"
 #include "../pet/pet_store.h"
 #include "../input/touch.h"
+#include "../light/strip.h"
 
 namespace web_api {
 
@@ -29,6 +31,7 @@ struct Deps {
   PetStore& pets;
   Touch& touch;
   WifiLink& wifi;
+  Strip& strip;
 };
 
 void begin(WebServer& server, const Deps& deps);
