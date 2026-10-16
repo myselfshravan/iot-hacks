@@ -30,4 +30,5 @@ History of the original plan: `../../docs/journal.md` §20.
 - **Fix:** one block `writePixels`. The loop gap is now about 30 ms, and the strip starts changing about 75 ms after a colour change.
 - Smoothing adds the fade on top of that.
 - `/light` reports `loop_gap_ms` (worst loop stall over the last 2 s) and `queued` (most packets drained at once) to catch regressions.
+- **HyperHDR on/off:** `make lights DO=start` opens it and follows the screen; `make lights DO=stop` quits it (it uses ~30% CPU). The strip keeps its own effect while it's off.
 - **Sync stuck?** Run `make lights DO=restart`. It restarts HyperHDR and prints Dexi's `/light`; a rising `packets` count means sync is back.

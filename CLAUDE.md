@@ -21,7 +21,7 @@ for the current status.
 ## Commands
 - `make flash APP=ir-hub` builds and flashes (`APP=experiments/06_ir_tx` also works).
 - `make monitor` and `make log NAME=x SECONDS=60` (log saved to `captures/raw/x.log`).
-- `make lights DO=...` controls the monitor LED strip (`screen`, `off`, `candle`, `chase ff0000`, `restart` for stuck HyperHDR); see `tools/lights.sh`.
+- `make lights DO=...` controls the monitor LED strip (`screen`, `off`, `candle`, `chase ff0000`, `start`/`stop` HyperHDR, `restart` if stuck); see `tools/lights.sh`.
 - `make check` compiles every sketch. Run it before committing.
 - `make intellisense` after adding a sketch or library.
 - Toolchain: arduino-cli, `esp32:esp32:esp32` core 3.3.12. Libraries: IRremoteESP8266 2.9.0, Espalexa 2.7.0, Adafruit DHT sensor library 1.4.7, Adafruit ST7735 and ST7789 + Adafruit GFX, Adafruit NeoPixel 1.15.5 (LovyanGFX installed but garbles this TFT).
