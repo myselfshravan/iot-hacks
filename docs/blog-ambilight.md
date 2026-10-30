@@ -76,7 +76,7 @@ For power, the firmware does the sums on every frame. It estimates the current t
 
 ## The bug that made it feel dead
 
-It worked on the first evening, and it felt awful.
+It worked, and it felt awful.
 
 The colours were right, but they arrived 0.5 to 1.3 seconds late. A punch landed, and the wall reacted after you'd already moved on. About two thirds of the packets never got used at all.
 
@@ -86,14 +86,14 @@ Remember that the ESP32 is also Dexi. Dexi's face lives on a 1.8" TFT screen, an
 
 **287 milliseconds.**
 
-Dexi's face was being pushed to the screen one pixel at a time. For nearly a third of a second, nothing else on the chip ran, and packets piled up behind it. The LEDs were fine. Wi-Fi was fine. A cute little face was holding the whole thing hostage.
+Dexi's face was being pushed to the screen one row at a time, with a fresh setup for every row. For nearly a third of a second, nothing else on the chip ran, and packets piled up behind it. The LEDs were fine. Wi-Fi was fine. A cute little face was holding the whole thing hostage.
 
-The fix was a few lines: send the frame as one block instead of pixel by pixel.
+The fix was a few lines: send the whole frame as one block instead of row by row.
 
 ```cpp
 tft_.startWrite();
-tft_.setAddrWindow(x, y, w, h);
-tft_.writePixels(pixels, w * h, true, false);
+tft_.setAddrWindow(0, 0, kWidth, kHeight);
+tft_.writePixels(pixels, kWidth * kHeight, true, false);
 tft_.endWrite();
 ```
 
