@@ -11,7 +11,7 @@ tags: esp32, iot, arduino, hardware, diy
 
 Room lights off, anime fight on, and the wall behind my monitor moves with every hit. The screen stops ending at the bezel.
 
-%[HOUDINI VIDEO LINK]
+%[https://youtu.be/ALgWMjIhsi8]
 
 That one is a fluid simulation I rendered in Houdini. Fluid is the real test, because the colour has to roll across the edges of the screen instead of flashing.
 
