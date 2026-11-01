@@ -1,7 +1,10 @@
-# Ambient lights: moved into Dexi
+# Ambient lights
 
-The WS2812B strip behind the monitor is now driven by Dexi's ESP32 (`firmware/dexi/src/light/`),
-not a separate WLED board. Wiring: `docs/wiring.md` (Dexi LED strip).
+A DIY Ambilight: 102 WS2812B LEDs around a 24" monitor, following the screen live. Build cost: under ₹1,000.
+
+Watch it: [anime fight](https://youtu.be/OhIqszJstaU) · [Houdini fluid simulation](https://youtube.com/shorts/ALgWMjIhsi8). Full story: [`docs/blog-ambilight.md`](../../docs/blog-ambilight.md).
+
+There's no firmware in this folder. The strip is driven by Dexi's ESP32 (`firmware/dexi/src/light/`), so it can react to Dexi. Wiring: [`docs/wiring.md`](../../docs/wiring.md) (Dexi LED strip).
 
 - **Modes** (phone page, `make lights DO=...`, or `GET /light?mode=..&color=rrggbb&sync=on|off&bri=0..255`):
   - mood: Dexi's colour, breathing;
@@ -20,7 +23,7 @@ History of the original plan: `../../docs/journal.md` §20.
 - Device `udpraw` → `dexi.local`:5568. Use the hostname, because the IP changes after Wi-Fi drops.
 - Capture: `systemInstanceEnable` on, USB capture off, system capture device `Display id: 2` (the LG; `reorder_displays` does not pick the screen). Restart HyperHDR if the monitor was off when it started.
 - 102 LEDs written as an explicit list: right bottom→top, top right→left, left top→bottom, bottom left→right. Capture depth: 5% on the sides, 10% top and bottom.
-- Settings: 20 fps capture, smoothing 80 ms at 50 Hz, gamma 1.5, black-bar detection off. Screen sync runs at full brightness under the 1.9 A cap.
+- Settings: 30 fps capture, smoothing 80 ms at 50 Hz, gamma 1.5, black-bar detection off. Screen sync runs at full brightness under the 1.9 A cap.
 - Tried and reverted 2026-10-14: 60 fps capture, 40 ms smoothing, gamma 1.0 with boosted saturation, and a core-0 strip task. Together they made sync seconds late or stuck, and the culprit was not isolated. Change one setting at a time.
 - macOS system capture on, display `auto`.
 - Opening the Classic layout editor and saving regenerates the list from its own fields, so re-check the direction after doing that.
