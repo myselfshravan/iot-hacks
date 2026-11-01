@@ -6,7 +6,7 @@ Home hardware hacks on ESP32, built by a software engineer from zero electronics
 
 [![Anime fight on the DIY Ambilight](https://img.youtube.com/vi/OhIqszJstaU/hqdefault.jpg)](https://youtu.be/OhIqszJstaU)
 
-▶ [Anime fight](https://youtu.be/OhIqszJstaU) · [Houdini fluid simulation](https://youtube.com/shorts/ALgWMjIhsi8) · [Full build story](docs/blog-ambilight.md)
+▶ [Anime fight](https://youtu.be/OhIqszJstaU) · [Houdini fluid simulation](https://youtube.com/shorts/ALgWMjIhsi8) · [Full build story](https://blog.shravanrevanna.me/i-built-my-own-ambilight-for-under-1k)
 
 ## The devices
 

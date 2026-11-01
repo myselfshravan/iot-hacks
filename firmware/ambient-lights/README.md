@@ -2,7 +2,7 @@
 
 A DIY Ambilight: 102 WS2812B LEDs around a 24" monitor, following the screen live. Build cost: under ₹1,000.
 
-Watch it: [anime fight](https://youtu.be/OhIqszJstaU) · [Houdini fluid simulation](https://youtube.com/shorts/ALgWMjIhsi8). Full story: [`docs/blog-ambilight.md`](../../docs/blog-ambilight.md).
+Watch it: [anime fight](https://youtu.be/OhIqszJstaU) · [Houdini fluid simulation](https://youtube.com/shorts/ALgWMjIhsi8). Full story: [the blog post](https://blog.shravanrevanna.me/i-built-my-own-ambilight-for-under-1k).
 
 There's no firmware in this folder. The strip is driven by Dexi's ESP32 (`firmware/dexi/src/light/`), so it can react to Dexi. Wiring: [`docs/wiring.md`](../../docs/wiring.md) (Dexi LED strip).
 
